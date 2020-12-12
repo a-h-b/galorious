@@ -37,7 +37,7 @@ if EMAIL != "":
         EMAIL = ""
         print("Your email address is not valid, you will not receive notifications.")
 
-validate(samples, schema="schemas/sample.schema.yaml")
+validate(config, schema="../../schemas/schema.yaml")
 
 yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
 yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))

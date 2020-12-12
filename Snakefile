@@ -89,9 +89,9 @@ else:
 # master command
 localrules: ALL
 rule ALL:
-    inputs:
+    input:
         final
-    outputs:
+    output:
         touch("status/all.done") 
 
 

@@ -1,6 +1,6 @@
 email: ""
 sessionName: ""
-normalMem: 9
+normalMem: "9G"
 steps: "basecalling"
 tmp_dir: "tmp"
 inputs:

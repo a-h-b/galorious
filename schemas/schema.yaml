@@ -12,7 +12,7 @@ properties:
   sessionName:
     type: string
   normalMem:
-    type: number
+    type: string
   tmp_dir:
     type: string
   genomeName:
