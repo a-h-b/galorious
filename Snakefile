@@ -79,11 +79,11 @@ if EMAIL == "":
         shell("mkdir -p job.errs.outs &>> logs/cleanup.log; ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv snakejob.* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log")
 else:
     onsuccess:
-        shell('mkdir -p job.errs.outs &>> logs/cleanup.log; ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; (  mv snakejob.* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; echo "$(date) {config[sessionName]}" | mail -s "IMP3 finished" {EMAIL} ')
+        shell('mkdir -p job.errs.outs &>> logs/cleanup.log; ( mv slurm* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; (  mv snakejob.* job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *log job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; ( mv *logfile job.errs.outs || touch job.errs.outs ) &>> logs/cleanup.log; echo "$(date) {config[sessionName]}" | mail -s "galorious finish" {EMAIL} ')
     onerror:
-        shell('echo "$(date) {config[sessionName]}" | mail -s "IMP3 exited with error" {EMAIL} ')
+        shell('echo "$(date) {config[sessionName]}" | mail -s "galorious exit with error" {EMAIL} ')
     onstart:
-        shell('echo "$(date) {config[sessionName]}" | mail -s "IMP3 started" {EMAIL} ')
+        shell('echo "$(date) {config[sessionName]}" | mail -s "galorious start" {EMAIL} ')
 
 
 # master command
