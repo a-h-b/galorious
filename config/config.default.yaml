@@ -1,0 +1,64 @@
+email: ""
+sessionName: ""
+normalMem: 9
+steps: "basecalling"
+tmp_dir: "tmp"
+inputs:
+  Nanopore: ""
+  Illumina: ""
+  Contigs: ""
+  Alignment_short_reads: ""
+  Gff: ""
+  Genomes2Compare: ""
+genomeName: "isolate1"
+outputdir: ""
+db_path: ""
+guppy:
+  bin: "module load gcccuda/2019b\n/data/project/galore/TOOLS/ont-guppy/bin"
+  model: "dna_r10.3_450bps_hac.cfg"
+  flowcell: "FLO-MIN111"
+  sequencing_kit: "SQK-LSK109"
+  barcoding_kit: "EXP-NBD103 EXP-NBD114"
+trimmomatic:
+  adapter: "TruSeq3-PE"
+  leading: 20
+  minlen: 40
+  palindrome_clip_threshold: 30
+  simple_clip_threshold: 10
+  trailing: 20
+  seed_mismatch: 2
+  window_size: 1
+  window_quality: 3
+  strictness: 0.5
+  target_length: 40
+hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
+hmm_settings:
+  KEGG:
+    cutoff: ""
+    trim: "--trimall"
+  essential:
+    cutoff: "--cut_tc"
+    trim: ""
+  metacyc:
+    cutoff: ""
+    trim: "--trimall"
+  Cas:
+    cutoff: ""
+    trim: ""
+  Pfam_A:
+    cutoff: "--cut_tc"
+    trim: ""
+  SwissProt:
+    cutoff: ""
+    trim: "--trimall"
+  TIGRPFAM:
+    cutoff: ""
+    trim: ""
+  dbCAN:
+    cutoff: ""
+    trim: ""
+  Resfams:
+    cutoff: ""
+    trim: ""
+
+

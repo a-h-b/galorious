@@ -1,0 +1,13 @@
+__default__:
+  call: "qsub -cwd"
+  mem_per_cpu: "-l h_vmem="
+  partition: ""
+  runtime: "-l h_rt="
+  threads: "-pe smp "
+
+guppy_basecalling:
+  partition: "-l gpu=1 -l qname=idiv"
+
+guppy_demulti:
+  partition: "-l gpu=1 -l qname=idiv"
+
