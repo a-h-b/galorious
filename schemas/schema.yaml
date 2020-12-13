@@ -13,6 +13,10 @@ properties:
     type: string
   normalMem:
     type: string
+  bigMem:
+    type: string
+  bigCores:
+    type: number
   tmp_dir:
     type: string
   genomeName:
@@ -20,6 +24,12 @@ properties:
   outputdir:
     type: string
   db_path:
+    type: string
+  barcode:
+    type: string
+  nextseq:
+    type: boolean
+  illumina_filter:
     type: string
   hmm_DBs:
     type: string
@@ -51,6 +61,13 @@ properties:
         type: string
       barcoding_kit:
         type: string
+  nanofilt:
+    type: object
+    properties:
+      quality: 
+        type: number
+      length:
+        type: number 
   trimmomatic:
     type: object
     properties:

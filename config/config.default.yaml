@@ -1,6 +1,8 @@
 email: ""
 sessionName: ""
 normalMem: "9G"
+bigMem: "36G"
+bigCores: 4
 steps: "basecalling"
 tmp_dir: "tmp"
 inputs:
@@ -14,11 +16,15 @@ genomeName: "isolate1"
 outputdir: ""
 db_path: ""
 guppy:
-  bin: "module load gcccuda/2019b\n/data/project/galore/TOOLS/ont-guppy/bin"
+  bin: "module load gcccuda/2019b\n/data/project/galore/TOOLS/ont-guppy-4.2.2./bin"
   model: "dna_r10.3_450bps_hac.cfg"
   flowcell: "FLO-MIN111"
   sequencing_kit: "SQK-LSK109"
   barcoding_kit: "EXP-NBD103 EXP-NBD114"
+barcode: "01"
+nanofilt:
+  quality: 10
+  length: 3000
 trimmomatic:
   adapter: "TruSeq3-PE"
   leading: 20
@@ -31,6 +37,8 @@ trimmomatic:
   window_quality: 3
   strictness: 0.5
   target_length: 40
+nextseq: false
+illumina_filter: "phiX174"
 hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
 hmm_settings:
   KEGG:

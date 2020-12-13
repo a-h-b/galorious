@@ -44,6 +44,8 @@ yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:
 
 STEPS = sorted(os.environ.get("STEPS", config['steps']).split())
 
+FILTER = os.environ.get("FILTER", config['illumina_filter']).split()
+
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless an absolute path is set
 TMPDIR = os.path.expandvars(config['tmp_dir'])
