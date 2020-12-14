@@ -32,11 +32,11 @@ def getThreads(max):
 def filtering_input(wildcards):
     n = len(wildcards.filterstep.split("."))
     if n == 1:
-        return ['Trimming/Illumina_fastq/r1.trimmed.fq',
-        'Trimming/Illumina_fastq/r2.trimmed.fq',
-        'Trimming/Illumina_fastq/se.trimmed.fq']
+        return ['trimming/Illumina_fastq/r1.trimmed.fq',
+        'trimming/Illumina_fastq/r2.trimmed.fq',
+        'trimming/Illumina_fastq/se.trimmed.fq']
     elif n > 1:
-        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['Trimming/Illumina_fastq/r1.trimmed.','Trimming/Illumina_fastq/r2.trimmed.','Trimming/Illumina_fastq/se.trimmed.' ]]
+        return [s + ".".join([s + "_filtered" for s in FILTER][:(n-1)]) + ".fq" for s in ['trimming/Illumina_fastq/r1.trimmed.','trimming/Illumina_fastq/r2.trimmed.','trimming/Illumina_fastq/se.trimmed.' ]]
     else:
         raise ValueError("invalid filter length %s" % n)
 

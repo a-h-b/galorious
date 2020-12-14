@@ -49,19 +49,18 @@ rule symlink_illumina_preprocessed_files:
         expand('trimming/Illumina_fastq/{read}.preprocessed.fq',read=["r1","r2","se"])
     resources:
         runtime = "1:00:00",
-        mem = config['normMem']
+        mem = config['normalMem']
     threads: 1
     message: "symlink_trimmed_filtered_files: Symlinking filtered and trimmed reads."
     run:
         for i,o in zip(input,output):
-             shell("ln -fs $(echo {i} | cut -f 2 -d /) {o} && touch -h {o}")
+             shell("ln -fs $(echo {i} | cut -f 3 -d /) {o} && touch -h {o}")
 
 
 if config['nextseq']:
     rule trimming:
         input:
-            'trimming/Illumina_fastq/r1.fq',
-            'trimming/Illumina_fastq/r2.fq',
+            config['inputs']['Illumina'].split(),
             DBPATH + "/adapters/adapters.done"
         output:
             'trimming/Illumina_fastq/r1.trimmoed.fq',
@@ -71,7 +70,7 @@ if config['nextseq']:
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
-            mem = config['normMem']
+            mem = config['normalMem']
         conda: ENVDIR + "galorious_trimming.yaml"
         log: "logs/trimming.illumina.log"
         message: "trimming illumina reads."
@@ -95,7 +94,7 @@ if config['nextseq']:
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
-            mem = config['normMem']
+            mem = config['normalMem']
         conda: ENVDIR + "galorious_trimming.yaml"
         log: "logs/trimming.illumina.nextseq.{read}.log"
         message: "trimming: Trimmming poly-G's off {wildcards.read} reads."
@@ -107,8 +106,7 @@ if config['nextseq']:
 else:
     rule trimming:
         input:
-            'trimming/Illumina_fastq/r1.fq',
-            'trimming/Illumina_fastq/r2.fq',
+            config['inputs']['Illumina'].split(),
             DBPATH + "/adapters/adapters.done"
         output:
             'trimming/Illumina_fastq/r1.trimmed.fq',
@@ -118,7 +116,7 @@ else:
         threads: getThreads(10)
         resources:
             runtime="12:00:00",
-            mem = config['normMem']
+            mem = config['normalMem']
         conda: ENVDIR + "galorious_trimming.yaml"
         log: "logs/trimming.illumina.log"
         message: "trimming: Trimmming illumina reads."
@@ -143,7 +141,7 @@ rule cat_se_trimmed:
     threads: 1
     resources:
         runtime="12:00:00",
-        mem = config['normMem']
+        mem = config['normalMem']
     message: "cat_se_trimmed: Concatenating trimmed single end reads"
     shell:
         """

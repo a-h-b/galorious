@@ -43,7 +43,7 @@ yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping(
 yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
 
 STEPS = sorted(os.environ.get("STEPS", config['steps']).split())
-
+DBPATH = os.environ.get("DBPATH", config['db_path'])
 FILTER = os.environ.get("FILTER", config['illumina_filter']).split()
 
 # temporary directory will be stored inside the OUTPUTDIR directory

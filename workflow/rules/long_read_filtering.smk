@@ -16,5 +16,5 @@ rule nanofilt:
         length=config['nanofilt']['length']
     shell:
         """
-        cat {input}/*.fastq | Nanofilt -q {params.qcutoff} -l {params.length} > {output[0]} && touch {output[1]}
+        cat {input}/*.fastq | NanoFilt -q {params.qcutoff} -l {params.length} > {output[0]} && touch {output[1]}
         """

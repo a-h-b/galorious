@@ -7,7 +7,6 @@ elif config['guppy']['flowcell'] and config['guppy']['sequencing_kit']:
     GUPPY_SHELL = """
         {config[guppy][bin]}/guppy_basecaller --input_path {input} --save_path {output[0]} --device auto --flowcell {config[guppy][flowcell] --kit config[guppy][sequencing_kit]} && touch {output[1]}
     """
-print(config['normalMem'])
 
 rule guppy_basecalling:
     input: 
