@@ -5,6 +5,7 @@ configfile: srcdir("config/config.default.yaml")
 SCRIPTSDIR = srcdir("workflow/scripts/")
 ENVDIR = srcdir("workflow/envs/")
 ROOTDIR = srcdir("/")
+BINDIR = srcdir("workflow/bin")
 
 # include configuration file
 include:

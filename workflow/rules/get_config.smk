@@ -8,25 +8,9 @@ import subprocess
 
 from snakemake.utils import validate
 
-def dict_merge(a, b):
-    """
-    Deep merge 2 dicts together
-    """
-    if not isinstance(b, dict):
-        return b
-    result = deepcopy(a)
-    for k, v in b.items():
-        if k in result and isinstance(result[k], dict):
-            result[k] = dict_merge(result[k], v)
-        else:
-            result[k] = deepcopy(v)
-    return result
-
 # default executable for snakemake
 shell.executable("bash")
 
-# custom configuration file
-CUSTOM_CONFIG_PATH = os.environ.get("CONFIGFILE","../nothing/here")
 
 # get parameters from the command line
 OUTPUTDIR = os.path.expandvars(config['outputdir'])
@@ -42,9 +26,9 @@ validate(config, schema="../../schemas/schema.yaml")
 yaml.add_representer(OrderedDict, lambda dumper, data: dumper.represent_mapping('tag:yaml.org,2002:map', data.items()))
 yaml.add_representer(tuple, lambda dumper, data: dumper.represent_sequence('tag:yaml.org,2002:seq', data))
 
-STEPS = sorted(os.environ.get("STEPS", config['steps']).split())
-DBPATH = os.environ.get("DBPATH", config['db_path'])
-FILTER = os.environ.get("FILTER", config['illumina_filter']).split()
+STEPS = sorted(config['steps'].split())
+DBPATH = config['db_path']
+FILTER = config['illumina_filter'].split()
 
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless an absolute path is set

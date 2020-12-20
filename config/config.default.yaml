@@ -39,6 +39,11 @@ trimmomatic:
   target_length: 40
 nextseq: false
 illumina_filter: "phiX174"
+unicycler:
+  keep: 2
+  mode: normal
+  linear_seqs: 0
+  min_fasta_length: 100
 hmm_DBs: "KEGG essential Pfam_A Resfams Cas dbCAN metacyc SwissProt TIGRPFAM"
 hmm_settings:
   KEGG:

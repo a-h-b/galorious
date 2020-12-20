@@ -1,5 +1,6 @@
 conda/*
 test/
+tmp/
 .snakemake/
 .snakemake/*
 .conda/
