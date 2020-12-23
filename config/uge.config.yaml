@@ -6,8 +6,8 @@ __default__:
   threads: "-pe smp "
 
 guppy_basecalling:
-  partition: "-l gpu=1"
+  partition: '-l gpu=1'
 
 guppy_demulti:
-  partition: "-l gpu=1"
+  partition: '-l gpu=1'
 
