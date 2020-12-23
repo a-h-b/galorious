@@ -58,6 +58,7 @@ if 'demultiplexing' in STEPS:
         "workflow/rules/long_read_demultiplexing.smk"
     final.append('status/demultiplexing.done')
 
+
 if 'filtering_Nanopore' in STEPS:
     include:
         "workflow/rules/long_read_filtering.smk"
@@ -71,6 +72,8 @@ if 'filtering_Illumina' in STEPS:
 if 'assembly' in STEPS:
     include:
         "workflow/rules/assembly.smk"
+    include:
+        "workflow/rules/mapping.smk"
     final.append('status/assembly.done')
 
 if 'annotation' in STEPS:
@@ -80,8 +83,8 @@ if 'annotation' in STEPS:
 
 if 'taxonomy_check' in STEPS:
     include:
-        "workflow/rules/taxonomy.smk"
-    final.append('status/taxonomy_check.done')
+        "workflow/rules/gtdbtk.smk"
+    final.append('status/taxonomy.done')
 
 if 'pangenomics' in STEPS:
     include:

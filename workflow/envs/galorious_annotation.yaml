@@ -1,4 +1,4 @@
-name: IMP_annotation
+name: galorious_annotation
 channels:
   - imp
   - bioconda
@@ -304,5 +304,4 @@ dependencies:
   - xz=5.2.4=h14c3975_1001
   - zlib=1.2.11=h516909a_1006
   - zstd=1.4.3=h3b9ef0a_0
-prefix: /work/projects/ecosystem_biology/local_tools/minicondaESB/envs/IMP_annotation
 

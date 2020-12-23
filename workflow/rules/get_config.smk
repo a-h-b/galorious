@@ -30,6 +30,7 @@ STEPS = sorted(config['steps'].split())
 DBPATH = config['db_path']
 FILTER = config['illumina_filter'].split()
 
+
 # temporary directory will be stored inside the OUTPUTDIR directory
 # unless an absolute path is set
 TMPDIR = os.path.expandvars(config['tmp_dir'])
