@@ -10,7 +10,7 @@ def input_nanofilt(step_list, input, barcode):
 
 rule nanofilt:
     input:
-        input_nanofile(STEPS,config['inputs']['Nanopore'],config['barcode'])
+        input_nanofilt(STEPS,config['inputs']['Nanopore'],config['barcode'])
     output:
         "trimming/Nanopore_fastq/trimmed.fastq",
         "status/filtering_Nanopore.done"

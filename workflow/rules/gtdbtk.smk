@@ -2,10 +2,12 @@ rule GTDBtk:
     input:
         "assembly/unicycler/assembly.fasta"
     output:
-        directory("taxonomy/GTDB"),
+        "taxonomy/GTDB/gtdbtk.bac120.summary.tsv",
+        "taxonomy/species",
         "status/taxonomy.done"
     params:
-        dir="taxonomy/"
+        dir="taxonomy/",
+        outdir="taxonomy/GTDB"
     resources:
         runtime = "12:00:00",
         mem = config['bigMem']
@@ -19,7 +21,8 @@ rule GTDBtk:
         cp {input} {params.dir}
         export GTDBTK_DATA_PATH="{DBPATH}/GTDB_tk"
         export PYTHONPATH=$CONDA_PREFIX/lib/python3.7/site-packages
-        gtdbtk classify_wf --genome_dir {params.dir} -x fasta --out_dir {output[0]} --cpus {threads} > {log} 2>&1
-        touch {output[1]}
+        gtdbtk classify_wf --genome_dir {params.dir} -x fasta --out_dir {params.outdir} --cpus {threads} > {log} 2>&1
+        cut -f 2 {output[0]} | tail -n 1 | sed 's#.*s__##' > {output[1]} 
+        touch {output[2]}
         """
 

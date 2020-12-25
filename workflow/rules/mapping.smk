@@ -57,21 +57,21 @@ rule bwa_index:
     message: "bwa_index: Indexing assembly for bwa."
     shell:
         """
-        bwa index {wildcards.fasta} > {log} 2>&1
+        bwa index {input} > {log} 2>&1
         """
 
 rule index_bam:
     input:
-        'assembly/unicycler/reads.on.assembly.sorted.bam'
+        '{bam}.sorted.bam'
     output:
-        'assembly/unicycler/reads.on.assembly.sorted.bam.bai'
+        '{bam}.sorted.bam.bai'
     resources:
         runtime = "8:00:00",
         mem = config['normalMem']
     threads: 1
     conda: ENVDIR + "galorious_mapping.yaml"
-    log: "logs/assembly_index.bam.log"
-    message: "index_bam: Indexing bam."
+    log: "logs/assembly_index.{bam}.log"
+    message: "index_bam: Indexing {wildcards.bam}."
     shell:
         """
         samtools index {input} > {log} 2>&1

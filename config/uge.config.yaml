@@ -11,3 +11,13 @@ guppy_basecalling:
 guppy_demulti:
   partition: '-l gpu=1'
 
+checkM_lineage:
+  partition: "-l highmem"
+
+mapping_on_assembly:
+  partition: "-l highmem"
+
+add_mapping_on_assembly:
+  partition: "-l highmem"
+
+

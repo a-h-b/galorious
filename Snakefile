@@ -81,12 +81,30 @@ if 'annotation' in STEPS:
         "workflow/rules/annotation.smk"
     final.append('status/annotation.done')
 
+if 'additional_mapping' in STEPS:
+    include:
+        "workflow/rules/mapping.smk"
+    include:
+        "workflow/rules/additional_mapping.smk"
+    final.append('status/additional_mapping.done')
+
 if 'taxonomy_check' in STEPS:
     include:
         "workflow/rules/gtdbtk.smk"
     final.append('status/taxonomy.done')
 
-if 'pangenomics' in STEPS:
+if 'download_pangenome' in STEPS:
+    include:
+        "workflow/rules/download_genomes.smk"
+    final.append('status/download_pangenome.done')
+
+
+if 'annotate_pangenome' in STEPS:
+    include:
+        "workflow/rules/annotate_pangenome.smk"
+    final.append('status/annotate_pangenome.done')
+
+if 'analyse_pangenome' in STEPS:
     include:
         "workflow/rules/pangenomics.smk"
     final.append('status/pangenomics.done')

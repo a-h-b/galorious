@@ -3,7 +3,7 @@ sessionName: ""
 normalMem: "9G"
 bigMem: "36G"
 bigCores: 4
-steps: "basecalling"
+steps: "basecalling demultiplexing filtering_Nanopore filtering_Illumina assembly annotation additional_mapping taxonomy_check download_pangenome annotate_pangenome analyse_pangenome"
 tmp_dir: "tmp"
 inputs:
   Nanopore: ""
@@ -11,7 +11,9 @@ inputs:
   Contigs: ""
   Alignment_short_reads: ""
   Gff: ""
-  Genomes2Compare: ""
+  Genomes2Compare: "" # directory, genomes need to be gzipped and filenames end in fna.gz, all files are used
+  Gffs2Compare: "" # directory, filenames need to end in gff, all files are used
+  Additional_Illumina_samples: "" # tsv table with path, r1_file, r2_file, and se_file columns
 genomeName: "isolate1"
 outputdir: ""
 db_path: ""
@@ -73,5 +75,9 @@ hmm_settings:
   Resfams:
     cutoff: ""
     trim: ""
-
-
+pangenome_download:
+  species: "" #needs to be a taxstring, separated by semicolon and using d__ etc, space between genus and species name in species part
+  use_gtdb_relatives: true
+  max_genomes: 50
+  path_to_metadata: ""
+  path_to_taxonomy: ""
