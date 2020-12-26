@@ -65,9 +65,9 @@ def input_getDownloadList(step_list,species,metadata,taxonomy):
         raise Exception("You'd asked to download genomes, but you've not set a species and are not checking the taxonomy.")
     else:
        if metadata:
-           inputs=metadata
+           inputs=[metadata]
        else:
-           inputs="tmp/bac120_metadata_r95.tsv"
+           inputs=["tmp/bac120_metadata_r95.tsv"]
        if taxonomy:
            inputs.append(taxonomy)
        else:
@@ -140,10 +140,10 @@ rule downloadgenomes:
         datasets download genome accession --inputfile ../../{input[0]} --exclude-gff3 --exclude-protein --exclude-rna
         """
 
-localrules: cpgenomes
+localrules: cp_genomes
 
 if config['inputs']['Genomes2Compare']:
-    checkpoint cpgenomes:
+    checkpoint cp_genomes:
         input:
             "pangenome/genomes",
             config['inputs']['Genomes2Compare']
@@ -154,7 +154,7 @@ if config['inputs']['Genomes2Compare']:
             cp {input[1]}/*fna.gz {input[0]} && touch {output}
             """
 else:
-    checkpoint cpgenomes:
+    checkpoint cp_genomes:
         input:
             "pangenome/genomes"
         output:

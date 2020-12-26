@@ -35,7 +35,7 @@ steps <- snakemake@params[["steps"]]
 
 taxString <- read.delim(species_file,header=F)[1,1]
 
-taxon <- as.character(read.delim(species_file,,stringsAsFactors=F,header=F,sep=";")[1,])
+taxon <- as.character(read.delim(species_file,stringsAsFactors=F,header=F,sep=";")[1,])
 names(taxon) <- c("d","p","c","o","f","g","s")
 taxon <- gsub("^.__","",taxon)
 
