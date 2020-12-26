@@ -40,8 +40,8 @@ rule roary:
     output:
         directory("pangenome/roary"),
         "status/pangenomics.done"
-    threads:
-        getThreads(8)
+    threads: 1
+#        getThreads(8)
     resources:
         runtime="48:00:00",
         mem=config['normalMem']
@@ -50,6 +50,8 @@ rule roary:
         ENVDIR + "galorious_roary.yaml"
     shell:
         """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export LC_ALL=en_US.utf-8
         roary -p {threads} -f {output[0]} -e --mafft {input} &>> {log} 
         touch {output[1]}
         """

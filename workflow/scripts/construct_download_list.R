@@ -26,22 +26,20 @@ taxonomy_file <- snakemake@input[[2]]
 species_file  <- snakemake@input[[3]]
 gtdb_out_file <- snakemake@params[["potGTDBresult"]]
 
-output_file <- snakemake@output
+output_file <- snakemake@output[[1]]
 
 maxGenomes <- as.numeric(snakemake@params[["maxGenome"]])
 useRelatives <- snakemake@params[["useRelatives"]]
 steps <- unlist(snakemake@params[["steps"]])
 
 
-taxString <- read.delim(species_file,header=F)[1,1]
-
+taxString <- read.delim(species_file,header=F,stringsAsFactors=F)[1,1]
 taxon <- as.character(read.delim(species_file,stringsAsFactors=F,header=F,sep=";")[1,])
 names(taxon) <- c("d","p","c","o","f","g","s")
 taxon <- gsub("^.__","",taxon)
 
 taxonomy <- read.delim(taxonomy_file, header=F,stringsAsFactors=F)
 colnames(taxonomy) <- c("ref_genome","taxString")
-taxonomy$assembly <- gsub("^.._","",taxonomy$ref_genome)
 
 metadata <- read.delim(metadata_file,stringsAsFactors=F)
 
@@ -65,22 +63,22 @@ if(length(focal_ref)==0){
     focal_ref <- limit_genome_list(maxGenomes, metadata[metadata$accession %in% focal_ref,])
     all <- focal_ref
   }else{
-    focal_cluster <- metadata$accession[metadata$gtdb_genome_representative==focal_ref]
-    if(length(focal_cluster) > (maxGenomes - length(focal_ref))){
+    focal_cluster <- metadata$accession[metadata$gtdb_genome_representative %in% focal_ref]
+    if(length(focal_cluster)+ length(focal_ref) > maxGenomes ){
       focal_cluster <- limit_genome_list(maxGenomes - length(focal_ref),metadata[metadata$accession %in% focal_cluster,])
       all <- c(focal_ref,focal_cluster)
     }else{
       if(useRelatives & any(grepl("taxonomy_check",steps))){
         allGTDB <- read.delim(gtdb_out_file,stringsAsFactors=F)
         relatives <- gsub(" ","",gsub(",.+","",unlist(strsplit(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";"))))
-        if(length(focal_cluster) + length(relatives) + 1 > maxGenomes){
+        if(length(focal_cluster) + length(relatives) + length(focal_ref) > maxGenomes){
           rel_ANI <- sapply(unlist(strsplit(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";")),
                              function(x) as.numeric(gsub(" ","",unlist(strsplit(x,split=","))[4])))
-          relatives <- relatives[order(rel_ANI,decreasing=T)[1:(maxGenomes-1-length(focal_cluster))]]
+          relatives <- relatives[order(rel_ANI,decreasing=T)[1:(maxGenomes-length(focal_ref)-length(focal_cluster))]]
           all <- c(focal_ref,focal_cluster,relatives)
         }else{
           rel_cluster <- metadata$accession[metadata$gtdb_genome_representative %in% relatives]
-          if(length(rel_cluster) + length(focal_cluster) + length(relatives) + 1 > maxGenomes) rel_cluster <- limit_genome_list(maxGenomes - 1-length(focal_cluster)-length(relatives),metadata[metadata$accession %in% rel_cluster,])
+          if(length(rel_cluster) + length(focal_cluster) + length(relatives) + length(focal_ref) > maxGenomes) rel_cluster <- limit_genome_list(maxGenomes - length(focal_ref) -length(focal_cluster)-length(relatives),metadata[metadata$accession %in% rel_cluster,])
           all <- c(focal_ref,focal_cluster,relatives,rel_cluster)
         }       
       }else{
@@ -90,8 +88,12 @@ if(length(focal_ref)==0){
   } 
 }
 
-if(length(focal_ref)>1) write.table(data.frame("ass"=all,stringsAsFactors=F),
+
+if(length(all)>1){
+  all <- gsub("^.._","",all)
+  if(!dir.exists(dirname(output_file))) dir.create(dirname(output_file),recursive =T)
+  write.table(data.frame("ass"=all,stringsAsFactors=F),
                                     output_file,
                                     sep="\t",quote=F,row.names=F,col.names=F) 
-
+}
 

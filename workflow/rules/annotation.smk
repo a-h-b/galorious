@@ -162,7 +162,7 @@ if "taxonomy_check" in STEPS:
                RANK=${{RANKS[$i]}}
                TAXON=`echo ${{TAXA[i]}} | sed "s#^.__##" | sed "s#_.##g"`
                if grep "$RANK" -w {params.checkmdir}/taxa.txt | grep "$TAXON" -w -q; then 
-                   checkm taxon_set species "$TAXON" {params.checkmdir}/${{TAXON// /}}.ms &>> {log}
+                   checkm taxon_set "$RANK" "$TAXON" {params.checkmdir}/${{TAXON// /}}.ms &>> {log}
                    checkm analyze -x faa -g {params.checkmdir}/${{TAXON// /}}.ms \
                     {params.annodir} {params.checkmdir} &>> {log}
                    checkm qa -o 2 -f {output} --tab_table {params.checkmdir}/${{TAXON// /}}.ms \
@@ -189,7 +189,7 @@ else:
         conda: ENVDIR + "galorious_check.yaml"
         shell:
             """
-            checkm lineage_wf --genes -t {threads} -x faa {params.annodir} {params.checkmdir} &>> {log}
+            checkm lineage_wf --genes -t {threads} --tab_table -f {output} -x faa {params.annodir} {params.checkmdir} &>> {log}
             """ 
 
 

@@ -1,0 +1,16 @@
+name: galorious_utils
+channels:
+  - bioconda
+  - conda-forge
+  - conda-forge/label/cf201901
+  - bioconda/label/cf201901
+  - defaults
+  - r
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=1_gnu
+  - libgcc-ng=9.3.0=h5dbcf3e_17
+  - libgomp=9.3.0=h5dbcf3e_17
+  - libstdcxx-ng=7.2.0=hdf63c60_3
+  - p7zip=15.09=h2d50403_4
+  - unzip=6.0=h516909a_2

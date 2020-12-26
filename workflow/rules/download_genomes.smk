@@ -119,7 +119,7 @@ rule construct_download_list:
     script:
         SCRIPTSDIR + "construct_download_list.R"
 
-rule downloadgenomes:
+checkpoint downloadgenomes:
     input:
         "pangenome/download_list.txt"
     output:
@@ -129,34 +129,33 @@ rule downloadgenomes:
         runtime="48:00:00",
         mem=config['normalMem']
     conda:
-        ENVDIR + "galorious_roary.yaml"
+        ENVDIR + "galorious_utils.yaml"
     shell:
         """
-        if [ -f $CONDA_PREFIX/bin/datasets ]; then
+        if [ ! -f $CONDA_PREFIX/bin/datasets ]; then
            curl -o $CONDA_PREFIX/bin/datasets 'https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/LATEST/linux-amd64/datasets'
+          chmod +x $CONDA_PREFIX/bin/datasets
         fi
-        chmod +x $CONDA_PREFIX/bin/datasets
         mkdir -p {output} && cd {output}
         datasets download genome accession --inputfile ../../{input[0]} --exclude-gff3 --exclude-protein --exclude-rna
+        7za x ncbi_dataset.zip
+        mv ncbi_dataset/data/GC*/*genomic.fna .
+        rm -r ncbi_dataset
+        gzip *fna
         """
+
 
 localrules: cp_genomes
 
-if config['inputs']['Genomes2Compare']:
-    checkpoint cp_genomes:
-        input:
-            "pangenome/genomes",
-            config['inputs']['Genomes2Compare']
-        output:
-            "status/download_pangenome.done" 
-        shell:
-            """
-            cp {input[1]}/*fna.gz {input[0]} && touch {output}
-            """
-else:
-    checkpoint cp_genomes:
-        input:
-            "pangenome/genomes"
-        output:
-            touch("status/download_pangenome.done") 
+rule cp_genomes:
+    input:
+        "pangenome/genomes"
+    output:
+        touch("status/download_pangenome.done") 
+
+def gather_genomes(wildcards):
+    checkpoint_output=checkpoints.downloadgenomes.get().output[0]
+    return expand("pangenome/annotation/{i}.gff",
+                                 i=glob_wildcards(os.path.join(checkpoint_output,"{i}.fna.gz")).i)
+
 
