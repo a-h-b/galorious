@@ -133,7 +133,7 @@ rule tar_annotation:
         """
 
 
-if "check_taxonomy" in STEPS:
+if "taxonomy_check" in STEPS:
     rule checkM:
         input:
             "taxonomy/GTDB/gtdbtk.bac120.summary.tsv",

@@ -30,7 +30,7 @@ output_file <- snakemake@output
 
 maxGenomes <- as.numeric(snakemake@params[["maxGenome"]])
 useRelatives <- snakemake@params[["useRelatives"]]
-steps <- snakemake@params[["steps"]]
+steps <- unlist(snakemake@params[["steps"]])
 
 
 taxString <- read.delim(species_file,header=F)[1,1]
@@ -46,7 +46,7 @@ taxonomy$assembly <- gsub("^.._","",taxonomy$ref_genome)
 metadata <- read.delim(metadata_file,stringsAsFactors=F)
 
 
-if(grepl("taxonomy_check",steps) | taxString %in% taxonomy$taxString){
+if(any(grepl("taxonomy_check",steps)) | taxString %in% taxonomy$taxString){
   focal_ref <- taxonomy$ref_genome[taxonomy$taxString==taxString]
 }else{
   if(grepl(paste0("s__",taxon["s"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString)))){
@@ -70,13 +70,13 @@ if(length(focal_ref)==0){
       focal_cluster <- limit_genome_list(maxGenomes - length(focal_ref),metadata[metadata$accession %in% focal_cluster,])
       all <- c(focal_ref,focal_cluster)
     }else{
-      if(useRelatives & grepl("taxonomy_check",steps)){
+      if(useRelatives & any(grepl("taxonomy_check",steps))){
         allGTDB <- read.delim(gtdb_out_file,stringsAsFactors=F)
         relatives <- gsub(" ","",gsub(",.+","",unlist(strsplit(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";"))))
         if(length(focal_cluster) + length(relatives) + 1 > maxGenomes){
           rel_ANI <- sapply(unlist(strsplit(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";")),
                              function(x) as.numeric(gsub(" ","",unlist(strsplit(x,split=","))[4])))
-          relatives <- relatives[order(rel_ANI,decreasing=T)[1:(maxGenomes-1-length(focal_cluster))]
+          relatives <- relatives[order(rel_ANI,decreasing=T)[1:(maxGenomes-1-length(focal_cluster))]]
           all <- c(focal_ref,focal_cluster,relatives)
         }else{
           rel_cluster <- metadata$accession[metadata$gtdb_genome_representative %in% relatives]
