@@ -7,7 +7,7 @@ condap <- Sys.getenv("CONDA_PREFIX")
 
 dot2adjM <- function(dotstring){
   edges <- data.frame("string"=dotstring[(grep("[*]",dotstring)[2]+1):
-                                         (grep("[}]",dotstring[,1])-1)],
+                                         (grep("[}]",dotstring[1])-1)],
                       stringsAsFactors=F)
   edges$source <- gsub("^ *","",gsub(" ->.+","",edges$string))
   edges$sink <- gsub(" .+","",gsub(".+-> ","",edges$string))
