@@ -129,30 +129,33 @@ checkpoint downloadgenomes:
         runtime="48:00:00",
         mem=config['normalMem']
     conda:
-        ENVDIR + "galorious_utils.yaml"
+        ENVDIR + "galorious_annotation.yaml"
     shell:
         """
-        if [ ! -f $CONDA_PREFIX/bin/datasets ]; then
-           curl -o $CONDA_PREFIX/bin/datasets 'https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/LATEST/linux-amd64/datasets'
-          chmod +x $CONDA_PREFIX/bin/datasets
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export LC_ALL=en_US.utf-8
+        mkdir -p {output} 
+        if grep -q "^GCA" {input}; then
+          grep "^GCA" {input} | while read -r acc; do 
+            esearch -db assembly -query $acc </dev/null | esummary \
+             | xtract -pattern DocumentSummary -element FtpPath_GenBank \
+             | while read -r url; do 
+                 fname=$(echo $url | grep -o 'GC._.*' | sed 's/$/_genomic.fna.gz/') ;
+                 wget -O {output}/$fname "$url/$fname" ;
+               done ;
+          done
         fi
-        mkdir -p {output} && cd {output}
-        datasets download genome accession --inputfile ../../{input[0]} --exclude-gff3 --exclude-protein --exclude-rna
-        7za x ncbi_dataset.zip
-        mv ncbi_dataset/data/GC*/*genomic.fna .
-        rm -r ncbi_dataset
-        gzip *fna
+        if grep -q "^GCF" {input}; then
+          grep "^GCF" {input} | while read -r acc; do 
+            esearch -db assembly -query $acc </dev/null | esummary \
+             | xtract -pattern DocumentSummary -element FtpPath_RefSeq \
+             | while read -r url; do 
+                 fname=$(echo $url | grep -o 'GC._.*' | sed 's/$/_genomic.fna.gz/') ;
+                 wget -O {output}/$fname "$url/$fname" ;
+               done ;
+          done
+        fi
         """
-
-#cat assm_accs.txt | while read -r acc ; do
-#    esearch -db assembly -query $acc </dev/null \
-#        | esummary \
-#        | xtract -pattern DocumentSummary -element FtpPath_GenBank \
-#        | while read -r url ; do
-#            fname=$(echo $url | grep -o 'GCA_.*' | sed 's/$/_genomic.fna.gz/') ;
-#            wget "$url/$fname" ;
-#        done ;
-#    done
 
 
 
