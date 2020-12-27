@@ -77,7 +77,7 @@ hmm_settings:
     trim: ""
 pangenome_download:
   species: "" #needs to be a taxstring, separated by semicolon and using d__ etc, space between genus and species name in species part
-  use_gtdb_relatives: true
+  use_gtdb_relatives: false #gtdb relatives are usually less than 95% similar to the genome of interest, so false is usually the best option
   max_genomes: 50
   path_to_metadata: ""
   path_to_taxonomy: ""

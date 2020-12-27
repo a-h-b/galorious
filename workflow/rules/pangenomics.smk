@@ -38,13 +38,18 @@ rule roary:
     input:
         getFocalGff(STEPS,config['inputs']['Gff'])
     output:
-        directory("pangenome/roary"),
-        "status/pangenomics.done"
+        "status/pangenomics.done",
+        "pangenome/roary/pan_genome_reference.fa",
+        "pangenome/roary/clustered_proteins",
+        "pangenome/roary/gene_presence_absence.csv",
+        "pangenome/roary/core_accessory_graph.dot"
     threads: 1
 #        getThreads(8)
     resources:
         runtime="48:00:00",
         mem=config['normalMem']
+    params:
+        outdir="pangenome/roary"
     log: "logs/roary.log"
     conda:
         ENVDIR + "galorious_roary.yaml"
@@ -52,6 +57,38 @@ rule roary:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         export LC_ALL=en_US.utf-8
-        roary -p {threads} -f {output[0]} -e --mafft {input} &>> {log} 
-        touch {output[1]}
+        roary -p {threads} -f {params.outdir} -e --mafft {input} &>> {log} 
+        touch {output[0]}
         """
+
+rule convert_roary_nets:
+    input:
+        "pangenome/roary/core_accessory_graph.dot"
+    output:
+        "pangenome/roary/core_accessory_graph.RDS"
+    threads: 1
+    resources:
+        runtime="1:00:00",
+        mem=config['normalMem']
+    log: "logs/roary_network.log"
+    conda:
+        ENVDIR + "galorious_roary.yaml"
+    script:
+        SCRIPTSDIR + "dot2edgelist.R"
+
+
+rule annotate_roary_focal:
+    input:
+        "pangenome/roary/gene_presence_absence.csv",
+        "pangenome/roary/clustered_proteins"
+    output:
+        "pangenome/roary/focal_gene_presence_absence.Rtab"
+        threads: 1
+    resources:
+        runtime="2:00:00",
+        mem=config['normalMem']
+    log: "logs/roary_focal_presence.log"
+    conda:
+        ENVDIR + "galorious_roary.yaml"
+    script:
+        SCRIPTSDIR + "focal_gene_presence.R"
