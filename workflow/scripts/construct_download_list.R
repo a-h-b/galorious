@@ -55,6 +55,7 @@ if(any(grepl("taxonomy_check",steps)) | taxString %in% taxonomy$taxString){
     }
   } 
 }
+focal_ref <- unique(focal_ref)
 if(length(focal_ref)==0){
   print("no reference genome found")
   all <- focal_ref
@@ -63,21 +64,21 @@ if(length(focal_ref)==0){
     focal_ref <- limit_genome_list(maxGenomes, metadata[metadata$accession %in% focal_ref,])
     all <- focal_ref
   }else{
-    focal_cluster <- metadata$accession[metadata$gtdb_genome_representative %in% focal_ref]
+    focal_cluster <- unique(metadata$accession[metadata$gtdb_genome_representative %in% focal_ref &! metadata$accession %in% focal_ref])
     if(length(focal_cluster)+ length(focal_ref) > maxGenomes ){
       focal_cluster <- limit_genome_list(maxGenomes - length(focal_ref),metadata[metadata$accession %in% focal_cluster,])
       all <- c(focal_ref,focal_cluster)
     }else{
       if(useRelatives & any(grepl("taxonomy_check",steps))){
         allGTDB <- read.delim(gtdb_out_file,stringsAsFactors=F)
-        relatives <- gsub(" ","",gsub(",.+","",unlist(strsplit(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";"))))
+        relatives <- gsub(" ","",gsub(",.+","",unlist(strsplit(unique(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";")))))
         if(length(focal_cluster) + length(relatives) + length(focal_ref) > maxGenomes){
-          rel_ANI <- sapply(unlist(strsplit(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";")),
+          rel_ANI <- sapply(unlist(strsplit(unique(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";"))),
                              function(x) as.numeric(gsub(" ","",unlist(strsplit(x,split=","))[4])))
           relatives <- relatives[order(rel_ANI,decreasing=T)[1:(maxGenomes-length(focal_ref)-length(focal_cluster))]]
           all <- c(focal_ref,focal_cluster,relatives)
         }else{
-          rel_cluster <- metadata$accession[metadata$gtdb_genome_representative %in% relatives]
+          rel_cluster <- unique(metadata$accession[metadata$gtdb_genome_representative %in% relatives &! metadata$accession %in% relatives])
           if(length(rel_cluster) + length(focal_cluster) + length(relatives) + length(focal_ref) > maxGenomes) rel_cluster <- limit_genome_list(maxGenomes - length(focal_ref) -length(focal_cluster)-length(relatives),metadata[metadata$accession %in% rel_cluster,])
           all <- c(focal_ref,focal_cluster,relatives,rel_cluster)
         }       
@@ -92,7 +93,7 @@ if(length(focal_ref)==0){
 if(length(all)>1){
   all <- gsub("^.._","",all)
   if(!dir.exists(dirname(output_file))) dir.create(dirname(output_file),recursive =T)
-  write.table(data.frame("ass"=all,stringsAsFactors=F),
+  write.table(data.frame("ass"=unique(all),stringsAsFactors=F),
                                     output_file,
                                     sep="\t",quote=F,row.names=F,col.names=F) 
 }
