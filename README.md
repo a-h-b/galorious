@@ -32,5 +32,4 @@ tar xvzf bac120_metadata_r95.tar.gz
 ```
 If you don't want to download it, you can keep the field empty in the config file and it will automatically download itself.
 
-* ncbi's datasets command line tool:
-it will install itself, if necessary.
+~~* ncbi's datasets command line tool: it will install itself, if necessary.~~ download is done by entrez direct tools, installed via conda.
