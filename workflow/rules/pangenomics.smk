@@ -8,16 +8,6 @@ def getFocalGff(step_list,Gff):
         all.append("pangenome/annotation")
     return all
 
-#def gather_annos(step_list,custom_genomes):
-#    if 'annotate_pangenome' in step_list:
-#        checkpoint_output=checkpoints.downloadgenomes.get(**wildcards).output[0]
-#        all_annos = expand("pangenome/annotation/{i}.prokka.gff",
-#                                 i=glob_wildcards(os.path.join(checkpoint_output,"{i}.fna.gz")).i)
-#    elif custom_genome:
-#        checkpoint_output=checkpoints.cp_genomes.get(**wildcards).output[0]
-#        all_annos = expand("pangenome/annotation/{i}.prokka.gff",
-#                                 i=glob_wildcards(os.path.join(checkpoint_output,"{i}.fna.gz")).i)
-
 
 if not 'annotate_pangenome' in STEPS and config['inputs']['Gffs2Compare']:
     localrules: cp_gffs
@@ -32,13 +22,35 @@ if not 'annotate_pangenome' in STEPS and config['inputs']['Gffs2Compare']:
             cp {input}/*.gff {output}
             """
 
-
+rule fastANI:
+    input:
+        "assembly/unicycler/assembly.fasta",
+        "pangenome/genomes"
+    output:
+        "pangenome/fastANI/all.tsv"
+    params:
+        outdir="pangenome/fastANI"
+    threads: 1
+    resources:
+        runtime="4:00:00",
+        mem=config['normalMem']
+    conda:
+        ENVDIR + "galorious_gtdbtk.yaml"
+    shell:
+        """
+        mkdir -p {params.outdir}
+        for genome in `ls {input[1]}/*fna.gz`
+        do 
+          OUT=$(basename $genome .gz)
+          fastANI -r {input[0]} -q $genome -o {params.outdir}/ani.$OUT.txt  --visualize
+        done
+        cat {params.outdir}/ani.$OUT.txt >> {output} 
+        """
 
 rule roary:
     input:
         getFocalGff(STEPS,config['inputs']['Gff'])
     output:
-        "status/pangenomics.done",
         "pangenome/roary/pan_genome_reference.fa",
         "pangenome/roary/clustered_proteins",
         "pangenome/roary/gene_presence_absence.csv",
@@ -58,7 +70,6 @@ rule roary:
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         export LC_ALL=en_US.utf-8
         roary -p {threads} -f {params.outdir} -e --mafft {input} &>> {log} 
-        touch {output[0]}
         """
 
 rule convert_roary_nets:
@@ -77,18 +88,96 @@ rule convert_roary_nets:
         SCRIPTSDIR + "dot2edgelist.R"
 
 
-rule annotate_roary_focal:
+rule translate_pangenome:
+    input:
+        "pangenome/roary/pan_genome_reference.fa"
+    output:
+        "pangenome/roary/pan_genome_reference.faa"
+    threads: 1
+    resources:
+        runtime="1:00:00",
+        mem=config['normalMem']
+    log: "logs/roary_network.log"
+    conda:
+        ENVDIR + "galorious_utils.yaml"
+    shell:
+        """
+        transeq -table 11 {input} {output} &>> {log}
+        sed -i 's/>.*group/>group/' {output}
+        """
+
+rule pangenomics_hmmer:
+    input:
+        "pangenome/roary/pan_genome_reference.faa"
+    output:
+        "pangenome/annotation/pan_genome_reference.faa.{db}.hmmscan"
+    params:
+        lambda wildcards: config["hmm_settings"][wildcards.db]["cutoff"],
+        dbs = DBPATH + "/hmm/{db}"
+    resources:
+        runtime = "2:00:00",
+        mem = config['normalMem']
+    conda: ENVDIR + "galorious_annotation.yaml"
+    threads: getThreads(12)
+    log: "logs/analysis_hmmer.{db}.log"
+    message: "hmmer: Running HMMER for {wildcards.db}."
+    shell:
+        """
+        sed 's/>.* group/>group/' {input} {input}
+        hmmsearch --cpu {threads} {params[0]} --noali --notextw \
+          --tblout {output} {params.dbs}/*.hmm {input} >/dev/null 2> {log}
+        """
+
+rule pangenomics_hmm2tab:
+    input:
+        "pangenome/annotation/pan_genome_reference.faa.{db}.hmmscan"
+    output:
+        "pangenome/annotation/pangenome.anno.{db}.tsv"
+    resources:
+        runtime = "8:00:00",
+        mem = config['normalMem']
+    threads: 1
+    params:
+        "{db}",
+        lambda wildcards: config["hmm_settings"][wildcards.db]["trim"],
+        "pangenome/roary/gene_presence_absence.csv"
+    log: "logs/pangenomics_hmm2tab.{db}.log"
+    message: "hmm2tab: Best hmmer result for {wildcards.db}."
+    conda:
+        ENVDIR + "galorious_annotation.yaml"
+    shell:
+        """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        {SCRIPTSDIR}/hmmscan_addBest2tab.pl -i {input} -a {params[2]} \
+         -n {params[0]} {params[1]} -o {output} -g $(wc -l {params[2]}) > {log} 2>&1
+        """
+
+rule merge_hmmtabs:
     input:
         "pangenome/roary/gene_presence_absence.csv",
-        "pangenome/roary/clustered_proteins"
+        expand("pangenome/annotation/pangenome.anno.{db}.tsv",db=config["hmm_DBs"].split())
     output:
-        "pangenome/roary/focal_gene_presence_absence.Rtab"
-        threads: 1
+        "pangenome/roary/gene_presence_absence.anno.RDS"
     resources:
-        runtime="2:00:00",
-        mem=config['normalMem']
-    log: "logs/roary_focal_presence.log"
-    conda:
+        runtime = "8:00:00",
+        mem = config['normalMem']
+    threads: 1
+    log: "logs/pangenomics_mergehmm.log"
+    message: "hmm2tab: Best hmmer result per database."
+    conda: 
         ENVDIR + "galorious_roary.yaml"
     script:
-        SCRIPTSDIR + "focal_gene_presence.R"
+        SCRIPTSDIR + "join_anno_tabs.R"
+
+
+localrules: ctrl_pangenomics
+
+rule ctrl_pangenomics:
+    input:
+        "pangenome/fastANI/all.tsv",
+        "pangenome/roary/gene_presence_absence.anno.RDS",
+        "pangenome/roary/core_accessory_graph.RDS"
+    output:
+        touch("status/pangenomics.done")
+
+

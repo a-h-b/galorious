@@ -1,4 +1,5 @@
 conda/*
+test*
 test/
 tmp/
 .snakemake/

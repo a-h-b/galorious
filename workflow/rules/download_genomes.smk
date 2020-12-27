@@ -159,9 +159,9 @@ checkpoint downloadgenomes:
 
 
 
-localrules: cp_genomes
+localrules: ctrl_genomes
 
-rule cp_genomes:
+rule ctrl_genomes:
     input:
         "pangenome/genomes"
     output:
@@ -171,5 +171,6 @@ def gather_genomes(wildcards):
     checkpoint_output=checkpoints.downloadgenomes.get().output[0]
     return expand("pangenome/annotation/{i}.gff",
                                  i=glob_wildcards(os.path.join(checkpoint_output,"{i}.fna.gz")).i)
+
 
 
