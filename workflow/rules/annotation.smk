@@ -24,7 +24,7 @@ rule prokkaC:
         "annotation/prokka.fna",
         "annotation/prokka.ffn",
         "annotation/prokka.fsa"
-    threads: getThreads(8)
+    threads: getThreads(4)
     log: "logs/analysis_annotate.log"
     resources:
         runtime="4:00:00",
@@ -64,7 +64,7 @@ rule hmmer:
         runtime = "2:00:00",
         mem = config['normalMem'] 
     conda: ENVDIR + "galorious_annotation.yaml"
-    threads: getThreads(12)
+    threads: getThreads(4)
     log: "logs/analysis_hmmer.{db}.log"
     message: "hmmer: Running HMMER for {wildcards.db}."
     shell:
@@ -84,7 +84,7 @@ rule makegff:
         "{db}",
         lambda wildcards: config["hmm_settings"][wildcards.db]["trim"]
     resources:
-        runtime = "4:00:00",
+        runtime = "2:00:00",
         mem = config['normalMem']
     threads: 1
     conda: ENVDIR + "galorious_annotation.yaml"
@@ -104,7 +104,7 @@ rule mergegff:
     output:
         "annotation/annotation_CDS_RNA_hmms.gff"
     resources:
-        runtime = "8:00:00",
+        runtime = "2:00:00",
         mem = config['normalMem']
     threads: 1
     log: "logs/analysis_mergegff.log"
@@ -121,7 +121,7 @@ rule tar_annotation:
         "annotation/intermediary.tar.gz"
     threads: 1
     resources:
-        runtime = "8:00:00",
+        runtime = "2:00:00",
         mem = config['normalMem']
     params:
         intermediary = "annotation/intermediary/"
@@ -142,7 +142,7 @@ if "taxonomy_check" in STEPS:
             "annotation/checkM/checkM.result.tsv"
         threads: 1
         resources:
-            runtime = "8:00:00",
+            runtime = "2:00:00",
             mem = config['normalMem']
         params:
             annodir = "annotation",
@@ -179,7 +179,7 @@ else:
             "annotation/checkM/checkM.result.tsv"
         threads: 2
         resources:
-            runtime = "8:00:00",
+            runtime = "2:00:00",
             mem = config['bigMem']
         params:
             annodir = "annotation",

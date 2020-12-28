@@ -3,7 +3,10 @@ channels:
   - imp
   - bioconda
   - conda-forge
+  - conda-forge/label/cf201901
+  - bioconda/label/cf201901
   - defaults
+  - r
 dependencies:
   - _libgcc_mutex=0.1=main
   - abricate=0.9.8=h1341992_0
@@ -240,6 +243,7 @@ dependencies:
   - perl-test-most=0.35=pl526_0
   - perl-test-requiresinternet=0.05=pl526_0
   - perl-test-warn=0.36=pl526_1
+  - perl-text-csv=2.00=pl526_0
   - perl-text-diff=1.45=pl526_0
   - perl-tie-ixhash=1.23=pl526_2
   - perl-time-hires=1.9760=pl526h14c3975_1
@@ -304,4 +308,3 @@ dependencies:
   - xz=5.2.4=h14c3975_1001
   - zlib=1.2.11=h516909a_1006
   - zstd=1.4.3=h3b9ef0a_0
-

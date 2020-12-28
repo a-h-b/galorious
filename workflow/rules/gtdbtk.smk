@@ -9,12 +9,12 @@ rule GTDBtk:
         dir="taxonomy/",
         outdir="taxonomy/GTDB"
     resources:
-        runtime = "12:00:00",
+        runtime = "3:00:00",
         mem = config['bigMem']
     conda: ENVDIR + "galorious_gtdbtk.yaml"
     log: "logs/taxonomy_GTDBtk.log"
     message: "GTDBtk: Classifiying using GTDBtk."
-    threads: 4
+    threads: getThreads(config['bigCores'])
     shell:
         """
         mkdir -p {params.dir} 

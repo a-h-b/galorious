@@ -26,7 +26,7 @@ for(f in hmmfiles){
     annos <- rbind(annos,tmpa)
   }
 }
-anno <- as.data.frame(tapply(annos$annotation,list(annos$group,annos$type),function(x) x),
+anno <- as.data.frame(tapply(annos$annotation,list(annos$Gene,annos$type),function(x) x),
          stringsAsFactors=F)
 pa <- merge(pa,anno,by.x=1,by.y=0,all.x=T)
 

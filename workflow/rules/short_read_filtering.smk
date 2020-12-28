@@ -32,7 +32,7 @@ rule illumina_filtering:
     wildcard_constraints:
         filterstep = "|".join([".".join([s + "_filtered" for s in FILTER][:x]) for x in range(1,len(FILTER)+1)])
     resources:
-        runtime = "24:00:00",
+        runtime = "12:00:00",
         mem = config['bigMem']
     threads: getThreads(config['bigCores'])
     conda: ENVDIR + "galorious_mapping.yaml"
@@ -67,9 +67,9 @@ if config['nextseq']:
             'trimming/Illumina_fastq/se1.trimmoed.fq',
             'trimming/Illumina_fastq/r2.trimmoed.fq',
             'trimming/Illumina_fastq/se2.trimmoed.fq'
-        threads: getThreads(10)
+        threads: getThreads(4)
         resources:
-            runtime="12:00:00",
+            runtime="2:00:00",
             mem = config['normalMem']
         conda: ENVDIR + "galorious_trimming.yaml"
         log: "logs/trimming.illumina.log"
@@ -91,9 +91,9 @@ if config['nextseq']:
         output:
             'trimming/Illumina_fastq/{read}.trimmed.fq',
             'trimming/Illumina_fastq/{read}.trimmoed.fq.gz'
-        threads: getThreads(10)
+        threads: getThreads(4)
         resources:
-            runtime="12:00:00",
+            runtime="4:00:00",
             mem = config['normalMem']
         conda: ENVDIR + "galorious_trimming.yaml"
         log: "logs/trimming.illumina.nextseq.{read}.log"
@@ -113,9 +113,9 @@ else:
             'trimming/Illumina_fastq/se1.trimmed.fq',
             'trimming/Illumina_fastq/r2.trimmed.fq',
             'trimming/Illumina_fastq/se2.trimmed.fq'
-        threads: getThreads(10)
+        threads: getThreads(4)
         resources:
-            runtime="12:00:00",
+            runtime="4:00:00",
             mem = config['normalMem']
         conda: ENVDIR + "galorious_trimming.yaml"
         log: "logs/trimming.illumina.log"
@@ -140,7 +140,7 @@ rule cat_se_trimmed:
         'trimming/Illumina_fastq/se.trimmed.fq'
     threads: 1
     resources:
-        runtime="12:00:00",
+        runtime="2:00:00",
         mem = config['normalMem']
     message: "cat_se_trimmed: Concatenating trimmed single end reads"
     shell:

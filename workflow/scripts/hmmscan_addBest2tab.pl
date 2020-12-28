@@ -76,16 +76,17 @@ my $header = 1;
 my $csv = Text::CSV->new ({ binary => 1, auto_diag => 1 });
 open my $fh, "<:encoding(utf8)", $tab_file or die "$tab_file $!";
 while (my $row = $csv->getline ($fh)) {
-        my $group = $row[0];
-	if $header == 1{
+        my $group = $row->[0];
+	if ($header == 1){
 		$header = 0;
 		print RESULT "$group\t$namearg\n";
 	}else{
-		if ($hit_hash{$row}) {
-			my $hmmgenes = $hit_hash{$product}[0];
+		if ($hit_hash{$group}){
+			my $hmmgenes = $hit_hash{$group}[0];
 			print RESULT "$group\t$hmmgenes\n";
-	}else{
-		print RESULT "$row\t\n";
+		}else{
+			print RESULT "$group\t\n";
+		}
 	}
 } 
 close $fh;

@@ -55,13 +55,14 @@ rule roary:
         "pangenome/roary/clustered_proteins",
         "pangenome/roary/gene_presence_absence.csv",
         "pangenome/roary/core_accessory_graph.dot"
-    threads: 1
+    threads: 4
 #        getThreads(8)
     resources:
-        runtime="48:00:00",
+        runtime="4:00:00",
         mem=config['normalMem']
     params:
-        outdir="pangenome/roary"
+        outdir="pangenome/roary",
+        tmp="pangenome/roary_"
     log: "logs/roary.log"
     conda:
         ENVDIR + "galorious_roary.yaml"
@@ -69,7 +70,10 @@ rule roary:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         export LC_ALL=en_US.utf-8
-        roary -p {threads} -f {params.outdir} -e --mafft {input} &>> {log} 
+        roary -z -p {threads} -f {params.outdir} -e --mafft {input} &>> {log}
+        mv {params.tmp}*/* {params.outdir}/
+        rm -r {params.tmp}*
+        tar cvzf {params.outdir}/intermediary.tar.gz {params.outdir}/_*
         """
 
 rule convert_roary_nets:
@@ -115,10 +119,10 @@ rule pangenomics_hmmer:
         lambda wildcards: config["hmm_settings"][wildcards.db]["cutoff"],
         dbs = DBPATH + "/hmm/{db}"
     resources:
-        runtime = "2:00:00",
+        runtime = "6:00:00",
         mem = config['normalMem']
     conda: ENVDIR + "galorious_annotation.yaml"
-    threads: getThreads(12)
+    threads: getThreads(4)
     log: "logs/analysis_hmmer.{db}.log"
     message: "hmmer: Running HMMER for {wildcards.db}."
     shell:
@@ -134,7 +138,7 @@ rule pangenomics_hmm2tab:
     output:
         "pangenome/annotation/pangenome.anno.{db}.tsv"
     resources:
-        runtime = "8:00:00",
+        runtime = "4:00:00",
         mem = config['normalMem']
     threads: 1
     params:
@@ -159,7 +163,7 @@ rule merge_hmmtabs:
     output:
         "pangenome/roary/gene_presence_absence.anno.RDS"
     resources:
-        runtime = "8:00:00",
+        runtime = "4:00:00",
         mem = config['normalMem']
     threads: 1
     log: "logs/pangenomics_mergehmm.log"
