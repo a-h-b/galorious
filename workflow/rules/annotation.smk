@@ -192,4 +192,53 @@ else:
             checkm lineage_wf --genes -t {threads} --tab_table -f {output} -x faa {params.annodir} {params.checkmdir} &>> {log}
             """ 
 
+checkpoint antismash:
+    input:
+        input_prokkaC(STEPS,config['inputs']['Contigs']),
+        "annotation/annotation_CDS_RNA_hmms.gff"
+    output:
+        directory("annotation/antiSmash")
+    params:
+        db = DBPATH + "/antismash_db"
+    resources:
+        runtime = "4:00:00",
+        mem = config['normalMem']
+    threads: getThreads(4)
+    log: "logs/annotation_antismash.log"
+    message: "antismash: Running antiSmash on the assembly."
+    conda:
+        ENVDIR + "galorious_antiSmash.yaml"
+    shell:
+        """
+        antismash -c {threads} --cb-general --cb-knownclusters --cb-subclusters --asf --pfam2go --smcog-trees --databases {params.db} --genefinding-gff3 {input[1]} --genefinding-tool none --output-dir {output} {input[0]} &>> {log}
+        """
+
+rule gbk2gff:
+    input:
+        "annotation/antiSmash/{somefile}.gbk"
+    output:
+        "annotation/antiSmash/{somefile}.gff"
+    threads: 1
+    log: "logs/gbk2gff.{somefile}.log"
+    message: "gbk2gff: converting {wildcards.somefile}
+    conda: 
+        ENVDIR + "galorious_roary.yaml"
+    shell:
+        """
+        """
+
+def gather_regions(wildcards):
+        checkpoint_output=checkpoints.antismash.get().output[0]
+        all = expand("annotation/antiSmash/{i}.gff",
+                                 i=glob_wildcards(os.path.join(checkpoint_output,"{i}.gbk")).i)
+        all.remove("annotation/antiSmash/assembly.gff")
+        return all
+
+rule all_regions:
+    input:
+        gather_regions
+    output:
+        touch("status/antismash.done")
+
+
 

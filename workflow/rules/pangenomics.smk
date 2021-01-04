@@ -25,6 +25,7 @@ if not 'annotate_pangenome' in STEPS and config['inputs']['Gffs2Compare']:
 rule fastANI:
     input:
         "assembly/unicycler/assembly.fasta",
+        "status/download_pangenome.done",
         "pangenome/genomes"
     output:
         "pangenome/fastANI/all.tsv"
@@ -39,7 +40,7 @@ rule fastANI:
     shell:
         """
         mkdir -p {params.outdir}
-        for genome in `ls {input[1]}/*fna.gz`
+        for genome in `ls {input[2]}/*fna.gz`
         do 
           OUT=$(basename $genome .gz)
           fastANI -r {input[0]} -q $genome -o {params.outdir}/ani.$OUT.txt  --visualize
@@ -123,7 +124,7 @@ rule pangenomics_hmmer:
         mem = config['normalMem']
     conda: ENVDIR + "galorious_annotation.yaml"
     threads: getThreads(4)
-    log: "logs/analysis_hmmer.{db}.log"
+    log: "logs/pangenomics_hmmer.{db}.log"
     message: "hmmer: Running HMMER for {wildcards.db}."
     shell:
         """

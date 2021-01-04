@@ -14,7 +14,7 @@ rule GTDBtk:
     conda: ENVDIR + "galorious_gtdbtk.yaml"
     log: "logs/taxonomy_GTDBtk.log"
     message: "GTDBtk: Classifiying using GTDBtk."
-    threads: getThreads(config['bigCores'])
+    threads: 6
     shell:
         """
         mkdir -p {params.dir} 
