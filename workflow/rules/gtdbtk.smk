@@ -1,6 +1,6 @@
 rule GTDBtk:
     input:
-        "assembly/unicycler/assembly.fasta"
+        "assembly/assembly.fasta"
     output:
         "taxonomy/GTDB/gtdbtk.bac120.summary.tsv",
         "taxonomy/species",

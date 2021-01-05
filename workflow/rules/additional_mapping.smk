@@ -28,12 +28,12 @@ def getAdditionalMapping_input(wildcards):
 rule add_mapping_on_assembly:
     input:
         getAdditionalMapping_input,
-        "assembly/unicycler/assembly.fasta.amb",
-        "assembly/unicycler/assembly.fasta.bwt",
-        "assembly/unicycler/assembly.fasta.pac",
-        "assembly/unicycler/assembly.fasta.sa",
-        "assembly/unicycler/assembly.fasta.ann",
-        "assembly/unicycler/assembly.fasta"
+        "assembly/assembly.fasta.amb",
+        "assembly/assembly.fasta.bwt",
+        "assembly/assembly.fasta.pac",
+        "assembly/assembly.fasta.sa",
+        "assembly/assembly.fasta.ann",
+        "assembly/assembly.fasta"
     output:
         'additional_mapping/{sample}.reads.on.assembly.sorted.bam'
     resources:
@@ -65,9 +65,9 @@ rule add_mapping_on_assembly:
 rule call_contig_add_depth:
     input:
         "additional_mapping/{sample}.reads.on.assembly.sorted.bam",
-        "assembly/unicycler/assembly.fasta",
-        "assembly/unicycler/assembly.fasta.fai",
-        "assembly/unicycler/assembly.fasta.bed3"
+        "assembly/assembly.fasta",
+        "assembly/assembly.fasta.fai",
+        "assembly/assembly.fasta.bed3"
     output:
         "additional_mapping/{sample}.contig_coverage.txt",
         "additional_mapping/{sample}.contig_depth.txt",

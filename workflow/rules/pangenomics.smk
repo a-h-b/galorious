@@ -24,7 +24,7 @@ if not 'annotate_pangenome' in STEPS and config['inputs']['Gffs2Compare']:
 
 rule fastANI:
     input:
-        "assembly/unicycler/assembly.fasta",
+        "assembly/assembly.fasta",
         "status/download_pangenome.done",
         "pangenome/genomes"
     output:

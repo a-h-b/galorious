@@ -75,6 +75,11 @@ if 'assembly' in STEPS:
     include:
         "workflow/rules/mapping.smk"
     final.append('status/assembly.done')
+elif 'annotation' in STEPS:
+    include:
+        "workflow/rules/mapping.smk"
+    include:
+        "workflow/rules/cp_assembly.smk"
 
 if 'annotation' in STEPS:
     include:

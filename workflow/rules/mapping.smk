@@ -5,19 +5,19 @@ rule mapping_on_assembly:
         'trimming/Illumina_fastq/r1.preprocessed.fq',
         'trimming/Illumina_fastq/r2.preprocessed.fq',
         'trimming/Illumina_fastq/se.preprocessed.fq',
-        "assembly/unicycler/assembly.fasta.amb",
-        "assembly/unicycler/assembly.fasta.bwt",
-        "assembly/unicycler/assembly.fasta.pac",
-        "assembly/unicycler/assembly.fasta.sa",
-        "assembly/unicycler/assembly.fasta.ann",
-        "assembly/unicycler/assembly.fasta"
+        "assembly/assembly.fasta.amb",
+        "assembly/assembly.fasta.bwt",
+        "assembly/assembly.fasta.pac",
+        "assembly/assembly.fasta.sa",
+        "assembly/assembly.fasta.ann",
+        "assembly/assembly.fasta"
     output:
-        'assembly/unicycler/reads.on.assembly.sorted.bam'
+        'assembly/reads.on.assembly.sorted.bam'
     resources:
         runtime = "12:00:00",
         mem = config['bigMem']
     params:
-        prefix="assembly/unicycler/reads.on.assembly"
+        prefix="assembly/reads.on.assembly"
     threads: 2
     conda: ENVDIR + "galorious_mapping.yaml"
     log: "logs/assembly_mapping_on_assembly.log"
@@ -41,13 +41,13 @@ rule mapping_on_assembly:
 
 rule bwa_index:
     input:
-        "assembly/unicycler/assembly.fasta"
+        "assembly/assembly.fasta"
     output:
-        "assembly/unicycler/assembly.fasta.amb",
-        "assembly/unicycler/assembly.fasta.bwt",
-        "assembly/unicycler/assembly.fasta.pac",
-        "assembly/unicycler/assembly.fasta.sa",
-        "assembly/unicycler/assembly.fasta.ann"
+        "assembly/assembly.fasta.amb",
+        "assembly/assembly.fasta.bwt",
+        "assembly/assembly.fasta.pac",
+        "assembly/assembly.fasta.sa",
+        "assembly/assembly.fasta.ann"
     resources:
         runtime = "24:00:00",
         mem = config['normalMem']
@@ -80,13 +80,13 @@ rule index_bam:
 
 rule call_contig_depth:
     input:
-        "assembly/unicycler/reads.on.assembly.sorted.bam",
-        "assembly/unicycler/assembly.fasta",
-        "assembly/unicycler/assembly.fasta.fai",
-        "assembly/unicycler/assembly.fasta.bed3"
+        "assembly/reads.on.assembly.sorted.bam",
+        "assembly/assembly.fasta",
+        "assembly/assembly.fasta.fai",
+        "assembly/assembly.fasta.bed3"
     output:
-        "assembly/unicycler/assembly.contig_coverage.txt",
-        "assembly/unicycler/assembly.contig_depth.txt",
+        "assembly/assembly.contig_coverage.txt",
+        "assembly/assembly.contig_depth.txt",
         report("stats/assembly.contig_flagstat.txt",category="Assembly")
     resources:
         runtime = "2:00:00",
@@ -115,9 +115,9 @@ rule call_contig_depth:
 
 rule contig_fasta_indexing:
     input:
-        "assembly/unicycler/assembly.fasta"
+        "assembly/assembly.fasta"
     output:
-        "assembly/unicycler/assembly.fasta.fai"
+        "assembly/assembly.fasta.fai"
     resources:
         runtime = "1:00:00",
         mem = config['normalMem']
@@ -132,10 +132,9 @@ rule contig_fasta_indexing:
 
 rule contig_fasta2bed_conversion:
     input:
-        "assembly/unicycler/assembly.fasta",
-        "assembly/unicycler/assembly.fasta.fai"
+        "assembly/assembly.fasta.fai"
     output:
-        "assembly/unicycler/assembly.fasta.bed3"
+        "assembly/assembly.fasta.bed3"
     resources:
         runtime = "1:00:00",
         mem = config['normalMem']
@@ -143,6 +142,6 @@ rule contig_fasta2bed_conversion:
     message: "contig_fasta2bed_conversion: Writing bed file for assembly."
     shell:
         """
-        cat {input[0]}.fai | awk '{{print $1 \"\t0\t\" $2}}' > {output}
+        cat {input[0]} | awk '{{print $1 \"\t0\t\" $2}}' > {output}
         """
 

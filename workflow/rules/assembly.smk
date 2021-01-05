@@ -17,7 +17,8 @@ rule unicycler:
         input_unicycler_longreads(STEPS,config['inputs']['Nanopore']),
         input_unicycler_shortreads(STEPS,config['inputs']['Illumina'])
     output:
-        "assembly/unicycler/assembly.fasta"
+        "assembly/unicycler/assembly.fasta",
+        "assembly/assembly.fasta"
     threads: 4
     log: "logs/assembly_unicycler.log"
     resources:
@@ -36,7 +37,7 @@ rule unicycler:
         unicycler -1 {input[1]} -2 {input[2]} -s {input[3]} -l {input[0]} \
          -o {params.outdir} --keep {params.keep} --mode {params.mode} --linear_seqs \
          {params.linear} --min_fasta_length {params.min} -t {threads} --verbosity 3 &>> {log}
-        sed -i 's/ .*//g' {output} 
+        sed 's/ .*//g' {output[0]} > {output[1]} 
         """
 
 localrules: assembly_ctrl
@@ -44,7 +45,7 @@ localrules: assembly_ctrl
 rule assembly_ctrl:
     input:
         "stats/assembly.contig_flagstat.txt",
-        "assembly/unicycler/reads.on.assembly.sorted.bam.bai"
+        "assembly/reads.on.assembly.sorted.bam.bai"
     output:
         touch("status/assembly.done")
 

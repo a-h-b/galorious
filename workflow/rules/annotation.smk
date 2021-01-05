@@ -1,22 +1,22 @@
 localrules: ctrl_anno
+def ctrl_anno_input(steplist):
+    input = ["annotation/checkM/checkM.result.tsv",
+             "annotation/intermediary.tar.gz"]
+    if "assembly" in steplist:
+        input.append(["stats/assembly.contig_flagstat.txt",
+                      "assembly/reads.on.assembly.sorted.bam.bai"])
+    return input
+
 rule ctrl_anno:
     input:
-        "annotation/checkM/checkM.result.tsv",
-        "annotation/intermediary.tar.gz"
+        ctrl_anno_input(STEPS)
     output:
         touch("status/annotation.done")
 
 
-def input_prokkaC(step_list,input):
-    if "assembly" in step_list:
-        return "assembly/unicycler/assembly.fasta"
-    else:
-        return input
-
-
 rule prokkaC:
     input:
-        input_prokkaC(STEPS,config['inputs']['Contigs']) 
+        "assembly/assembly.fasta"
     output:
         "annotation/annotation.filt.gff",
         "annotation/prokka.gff",
@@ -99,7 +99,7 @@ rule makegff:
 
 rule mergegff:
     input:
-        "annotation/annotation.filt.gff",
+        "annotation/annotation_antiSmash.gff",
         expand("annotation/intermediary/annotation.CDS.RNA.{db}.gff",db=config["hmm_DBs"].split())
     output:
         "annotation/annotation_CDS_RNA_hmms.gff"
@@ -194,8 +194,8 @@ else:
 
 checkpoint antismash:
     input:
-        input_prokkaC(STEPS,config['inputs']['Contigs']),
-        "annotation/annotation_CDS_RNA_hmms.gff"
+        "assembly/assembly.fasta",
+        "annotation/annotation.filt.gff"
     output:
         directory("annotation/antiSmash")
     params:
@@ -217,28 +217,54 @@ rule gbk2gff:
     input:
         "annotation/antiSmash/{somefile}.gbk"
     output:
-        "annotation/antiSmash/{somefile}.gff"
+        "annotation/antiSmash/{somefile}.gbk.gff"
     threads: 1
+    resources:
+        runtime = "1:00:00",
+        mem = config['normalMem']
+    params:
+        outdir="annotation/antiSmash"
     log: "logs/gbk2gff.{somefile}.log"
-    message: "gbk2gff: converting {wildcards.somefile}
+    message: "gbk2gff: converting {wildcards.somefile}"
     conda: 
         ENVDIR + "galorious_roary.yaml"
     shell:
         """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export LC_ALL=en_US.utf-8
+        perl bp_genbank2gff3.pl --outdir {params.outdir} {input} &>> {log}
+        IN={input}
+        keep=$(basename ${{IN%%.*}})
+        sed -i "/^[^$keep]/d" {output}
         """
 
 def gather_regions(wildcards):
         checkpoint_output=checkpoints.antismash.get().output[0]
-        all = expand("annotation/antiSmash/{i}.gff",
+        all = expand("annotation/antiSmash/{i}.gbk.gff",
                                  i=glob_wildcards(os.path.join(checkpoint_output,"{i}.gbk")).i)
         all.remove("annotation/antiSmash/assembly.gff")
         return all
 
-rule all_regions:
+rule regions2gff:
     input:
-        gather_regions
+        gff="annotation/annotation.filt.gff",
+        regions=gather_regions
     output:
-        touch("status/antismash.done")
-
-
+        "annotation/annotation_antiSmash.gff"
+    params:
+        gffs = lambda wildcards,input: input['regions'].join(",")
+    threads: 1
+    resources:
+        runtime = "1:00:00",
+        mem = config['normalMem']
+    log: "logs/regions2gff.log"
+    message: "regions2gff: adding antiSmash regions to gff"
+    conda:
+        ENVDIR + "galorious_annotation.yaml"
+    shell:
+        """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        export LC_ALL=en_US.utf-8
+        perl {SCRIPTSDIR}/addAntiSmash2gff.pl -a {input[0]} -s {params.gffs} -o {output}
+        """
 
