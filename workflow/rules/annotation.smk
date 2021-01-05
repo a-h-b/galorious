@@ -2,7 +2,7 @@ localrules: ctrl_anno
 def ctrl_anno_input(steplist):
     input = ["annotation/checkM/checkM.result.tsv",
              "annotation/intermediary.tar.gz"]
-    if "assembly" in steplist:
+    if not "assembly" in steplist:
         input.append(["stats/assembly.contig_flagstat.txt",
                       "assembly/reads.on.assembly.sorted.bam.bai"])
     return input
@@ -232,7 +232,7 @@ rule gbk2gff:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
         export LC_ALL=en_US.utf-8
-        perl bp_genbank2gff3.pl --outdir {params.outdir} {input} &>> {log}
+        perl $CONDA_PREFIX/bin/bp_genbank2gff3.pl --outdir {params.outdir} {input} &>> {log}
         IN={input}
         keep=$(basename ${{IN%%.*}})
         sed -i "/^[^$keep]/d" {output}
@@ -242,17 +242,17 @@ def gather_regions(wildcards):
         checkpoint_output=checkpoints.antismash.get().output[0]
         all = expand("annotation/antiSmash/{i}.gbk.gff",
                                  i=glob_wildcards(os.path.join(checkpoint_output,"{i}.gbk")).i)
-        all.remove("annotation/antiSmash/assembly.gff")
+        all.remove("annotation/antiSmash/assembly.gbk.gff")
         return all
 
 rule regions2gff:
     input:
-        gff="annotation/annotation.filt.gff",
-        regions=gather_regions
+        "annotation/annotation.filt.gff",
+        gather_regions
     output:
         "annotation/annotation_antiSmash.gff"
     params:
-        gffs = lambda wildcards,input: input['regions'].join(",")
+        gffs = lambda wildcards,input: ",".join(input[1:])
     threads: 1
     resources:
         runtime = "1:00:00",

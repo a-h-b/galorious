@@ -46,11 +46,12 @@ metadata <- read.delim(metadata_file,stringsAsFactors=F)
 
 if(any(grepl("taxonomy_check",steps)) | taxString %in% taxonomy$taxString){
   focal_ref <- taxonomy$ref_genome[taxonomy$taxString==taxString]
-}else{
-  if(grepl(paste0("s__",taxon["s"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString)))){
+}
+if(!"focal_ref" %in% ls() | length(focal_ref)==0){
+  if(taxon["s"]!="" & any(grepl(paste0("s__",taxon["s"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))){
     focal_ref <- taxonomy$ref_genome[which(grepl(paste0("s__",taxon["s"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))]
   }else{
-    if(grepl(paste0("g__",taxon["g"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString)))){
+    if(taxon["g"]!="" & any(grepl(paste0("g__",taxon["g"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))){
      focal_ref <- taxonomy$ref_genome[which(grepl(paste0("g__",taxon["g"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))]
     }
   } 
