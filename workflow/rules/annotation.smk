@@ -152,24 +152,31 @@ if "taxonomy_check" in STEPS:
         conda: ENVDIR + "galorious_check.yaml"
         shell:
             """
-            TAX=`cut -f 2 {input[0]} | tail -n 1`
             mkdir -p {params.checkmdir}
             checkm taxon_list >> {params.checkmdir}/taxa.txt
-            IFS=';' read -ra TAXA <<< "$TAX"
-            IFS=',' read -ra RANKS <<< "domain,phylum,class,order,family,genus,species"
-            for i in `seq $((${{#TAXA[@]}}-1)) -1 0`
+            for c in 2 5 10
             do
-               RANK=${{RANKS[$i]}}
-               TAXON=`echo ${{TAXA[i]}} | sed "s#^.__##" | sed "s#_.##g"`
-               if grep "$RANK" -w {params.checkmdir}/taxa.txt | grep "$TAXON" -w -q; then 
-                   checkm taxon_set "$RANK" "$TAXON" {params.checkmdir}/${{TAXON// /}}.ms &>> {log}
-                   checkm analyze -x faa -g {params.checkmdir}/${{TAXON// /}}.ms \
+              TAX=`cut -f $c {input[0]} | tail -n 1`
+              if [[ "$TAX" != "N/A" ]]
+              then
+                IFS=';' read -ra TAXA <<< "$TAX"
+                IFS=',' read -ra RANKS <<< "domain,phylum,class,order,family,genus,species"
+                for i in `seq $((${{#TAXA[@]}}-1)) -1 0`
+                do
+                  RANK=${{RANKS[$i]}}
+                  TAXON=`echo ${{TAXA[i]}} | sed "s#^.__##" | sed "s#_.##g"`
+                  if grep "$RANK" -w {params.checkmdir}/taxa.txt | grep "$TAXON" -w -q; then 
+                    checkm taxon_set "$RANK" "$TAXON" {params.checkmdir}/${{TAXON// /}}.ms &>> {log}
+                    checkm analyze -x faa -g {params.checkmdir}/${{TAXON// /}}.ms \
                     {params.annodir} {params.checkmdir} &>> {log}
-                   checkm qa -o 2 -f {output} --tab_table {params.checkmdir}/${{TAXON// /}}.ms \
+                    checkm qa -o 2 -f {output} --tab_table {params.checkmdir}/${{TAXON// /}}.ms \
                     {params.checkmdir} &>> {log}
-                   break
-               fi
+                    break
+                  fi
+                done
+              fi
             done
+            echo "no taxon marker, do checkM from scratch" >> {log}
             """
 else:
     rule checkM_lineage:

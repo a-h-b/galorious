@@ -50,7 +50,7 @@ if(any(grepl("taxonomy_check",steps)) | any(taxString %in% taxonomy$taxString)){
   focal_ref <- taxonomy$ref_genome[taxonomy$taxString %in% taxString]
 }
 if(!"focal_ref" %in% ls() | length(focal_ref)==0){
-  for(s in taxon["s"]){
+  for(s in taxon$s){
     if(s!="" & any(grepl(paste0("s__",s), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))){
       focal_ref <- taxonomy$ref_genome[which(grepl(paste0("s__",s), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))]
     }
@@ -64,9 +64,8 @@ if("focal_ref" %in% ls()) focal_ref <- unique(focal_ref)
  
 if(!"focal_ref" %in% ls() | length(focal_ref)==0){
   print("no reference genome found")
+  all <- vector(mode="character")
 }else{
-  all <- focal_ref
-  print(all)
   if(length(focal_ref)>maxGenomes){
     focal_ref <- limit_genome_list(maxGenomes, metadata[metadata$accession %in% focal_ref,])
     all <- focal_ref
@@ -78,9 +77,9 @@ if(!"focal_ref" %in% ls() | length(focal_ref)==0){
     }else{
       if(useRelatives & any(grepl("taxonomy_check",steps))){
         allGTDB <- read.delim(gtdb_out_file,stringsAsFactors=F)
-        relatives <- gsub(" ","",gsub(",.+","",unlist(strsplit(unique(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";")))))
+        relatives <- gsub(" ","",gsub(",.+","",unlist(strsplit(unique(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.),split=";"))))
         if(length(focal_cluster) + length(relatives) + length(focal_ref) > maxGenomes){
-          rel_ANI <- sapply(unlist(strsplit(unique(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.,split=";"))),
+          rel_ANI <- sapply(unlist(strsplit(unique(allGTDB$other_related_references.genome_id.species_name.radius.ANI.AF.),split=";")),
                              function(x) as.numeric(gsub(" ","",unlist(strsplit(x,split=","))[4])))
           relatives <- relatives[order(rel_ANI,decreasing=T)[1:(maxGenomes-length(focal_ref)-length(focal_cluster))]]
           all <- c(focal_ref,focal_cluster,relatives)
