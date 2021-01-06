@@ -33,10 +33,12 @@ useRelatives <- snakemake@params[["useRelatives"]]
 steps <- unlist(snakemake@params[["steps"]])
 
 
-taxString <- read.delim(species_file,header=F,stringsAsFactors=F)[1,1]
-taxon <- as.character(read.delim(species_file,stringsAsFactors=F,header=F,sep=";")[1,])
-names(taxon) <- c("d","p","c","o","f","g","s")
-taxon <- gsub("^.__","",taxon)
+taxString <- read.delim(species_file,header=F,stringsAsFactors=F,na.strings="N/A")[,1]
+taxString <- taxString[!is.na(taxString)]
+taxon <- read.delim(species_file,stringsAsFactors=F,header=F,sep=";",na.strings="N/A")
+taxon <- taxon[!is.na(taxon$V1),]
+colnames(taxon) <- c("d","p","c","o","f","g","s")
+taxon <- as.data.frame(unique(sapply(taxon,function(x) gsub("^.__","",x))),stringsAsFactors=F)
 
 taxonomy <- read.delim(taxonomy_file, header=F,stringsAsFactors=F)
 colnames(taxonomy) <- c("ref_genome","taxString")
@@ -44,23 +46,27 @@ colnames(taxonomy) <- c("ref_genome","taxString")
 metadata <- read.delim(metadata_file,stringsAsFactors=F)
 
 
-if(any(grepl("taxonomy_check",steps)) | taxString %in% taxonomy$taxString){
-  focal_ref <- taxonomy$ref_genome[taxonomy$taxString==taxString]
+if(any(grepl("taxonomy_check",steps)) | any(taxString %in% taxonomy$taxString)){
+  focal_ref <- taxonomy$ref_genome[taxonomy$taxString %in% taxString]
 }
 if(!"focal_ref" %in% ls() | length(focal_ref)==0){
-  if(taxon["s"]!="" & any(grepl(paste0("s__",taxon["s"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))){
-    focal_ref <- taxonomy$ref_genome[which(grepl(paste0("s__",taxon["s"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))]
-  }else{
-    if(taxon["g"]!="" & any(grepl(paste0("g__",taxon["g"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))){
-     focal_ref <- taxonomy$ref_genome[which(grepl(paste0("g__",taxon["g"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))]
+  for(s in taxon["s"]){
+    if(s!="" & any(grepl(paste0("s__",s), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))){
+      focal_ref <- taxonomy$ref_genome[which(grepl(paste0("s__",s), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))]
     }
   } 
 }
-focal_ref <- unique(focal_ref)
-if(length(focal_ref)==0){
+if("focal_ref" %in% ls()) focal_ref <- unique(focal_ref)
+  #}#else{
+  #  if(taxon["g"]!="" & any(grepl(paste0("g__",taxon["g"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))){
+  #   focal_ref <- taxonomy$ref_genome[which(grepl(paste0("g__",taxon["g"]), gsub("_. ","",gsub("_.$","",taxonomy$taxString))))]
+  #  } #removed, because genus is usually too divergent for pangenomics
+ 
+if(!"focal_ref" %in% ls() | length(focal_ref)==0){
   print("no reference genome found")
-  all <- focal_ref
 }else{
+  all <- focal_ref
+  print(all)
   if(length(focal_ref)>maxGenomes){
     focal_ref <- limit_genome_list(maxGenomes, metadata[metadata$accession %in% focal_ref,])
     all <- focal_ref
@@ -91,11 +97,13 @@ if(length(focal_ref)==0){
 }
 
 
-if(length(all)>1){
+if(length(all)>0){
   all <- gsub("^.._","",all)
   if(!dir.exists(dirname(output_file))) dir.create(dirname(output_file),recursive =T)
   write.table(data.frame("ass"=unique(all),stringsAsFactors=F),
                                     output_file,
                                     sep="\t",quote=F,row.names=F,col.names=F) 
+}else{
+ print("no genomes to print")
 }
 

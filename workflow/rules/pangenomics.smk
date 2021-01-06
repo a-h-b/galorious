@@ -44,8 +44,8 @@ rule fastANI:
         do 
           OUT=$(basename $genome .gz)
           fastANI -r {input[0]} -q $genome -o {params.outdir}/ani.$OUT.txt  --visualize
+          cat {params.outdir}/ani.$OUT.txt >> {output} 
         done
-        cat {params.outdir}/ani.$OUT.txt >> {output} 
         """
 
 rule roary:
