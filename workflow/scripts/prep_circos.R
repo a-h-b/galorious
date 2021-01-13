@@ -196,7 +196,9 @@ if(file.exists("pangenome/roary/gene_presence_absence.anno.RDS")){
                    "END"=genes$end[genes$feature=="CDS"],
                    "VALUE"=abs(sapply(gsub("ID=","",gsub(";.+","",
                                                          genes$attribute[genes$feature=="CDS"])),
-                                      function(x) pan$No..isolates[pan$prokka==x])-max(pan$No..isolates)),
+                                      function(x){
+                      if(any(pan$prokka==x)) pan$No..isolates[pan$prokka==x] else max(pan$No..isolates)
+                   })-max(pan$No..isolates)),
                    stringsAsFactors=F)
 }else {
   kt <- ""
@@ -205,30 +207,4 @@ write.table(kt,"visualization/data/pangenome.txt",
             row.names=F,col.names=F,quote=F)
 
 
-
-  # if("essential" %in% colnames(genes)){
-  #   kt <- data.frame("chr"=genes$contig[genes$essential!=""],
-  #                    "START"=genes$start[genes$essential!=""],
-  #                    "END"=genes$end[genes$essential!=""])
-  #   tabEss <- table(genes$essentialGene[genes$essential!=""])
-  #   lt <- data.frame("chr1","START1","END1","chr2","START2","END2",stringsAsFactors=F)[F,]
-  #   if(any(tabEss>1)){
-  #     dupEss <- names(tabEss[tabEss>1])
-  #     for(de in dupEss){
-  #       dupGe <- genes[genes$essential==de,c("contig","start","end")]
-  #       for(i in 1:(nrow(dupGe)-1)){
-  #         for(j in 2:nrow(dupGe)){
-  #           lt[nrow(lt)+1,] <- c(dupGe[i,1],
-  #                                dupGe[i,2:3],
-  #                                dupGe[j,1],
-  #                                dupGe[j,2:3])
-  #         }
-  #       }
-  #     }
-  #   }
-  # }else {
-  #   kt <- ""
-  # }
-  # write.table(kt,paste0(circos_files,"/data/essentialGenes.highlights.txt",sep=""),row.names=F,col.names=F,quote=F)
-  # write.table(lt,paste0(circos_files,"/data/essentialGenes.links.txt",sep=""),row.names=F,col.names=F,quote=F)
 
