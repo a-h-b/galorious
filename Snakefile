@@ -114,6 +114,11 @@ if 'analyse_pangenome' in STEPS:
         "workflow/rules/pangenomics.smk"
     final.append('status/pangenomics.done')
 
+if 'circos' in STEPS:
+    include:
+        "workflow/rules/visualization.smk"
+    final.append("visualization/galorious.svg")
+
 # clean up in the end
 if EMAIL == "":
     onsuccess:
