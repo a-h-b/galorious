@@ -13,7 +13,7 @@ inputs:
   Gff: ""
   Genomes2Compare: "" # directory, genomes need to be gzipped and filenames end in fna.gz, all files are used
   Gffs2Compare: "" # directory, filenames need to end in gff, all files are used
-  Additional_Illumina_samples: "" # tsv table with path, r1_file, r2_file, and se_file columns
+  Additional_Illumina_samples: "" # tsv table with sample, path, r1_file, r2_file, and se_file columns
 genomeName: "isolate1"
 outputdir: ""
 db_path: ""

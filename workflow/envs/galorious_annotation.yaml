@@ -1,5 +1,6 @@
 name: galorious_annotation
 channels:
+  - anaconda
   - imp
   - bioconda
   - conda-forge
@@ -14,11 +15,13 @@ dependencies:
   - aragorn=1.2.38=h470a237_2
   - barrnap=0.9=2
   - bedtools=2.18.0=0
+  - biopython=1.78=py37h7b6447c_0
+  - blas=1.0=mkl
   - blast=2.9.0=pl526h3066fca_4
   - bzip2=1.0.8=h516909a_1
-  - ca-certificates=2019.9.11=hecc5488_0
+  - ca-certificates=2020.10.14=0
   - cairo=1.16.0=hfb77d84_1002
-  - certifi=2019.9.11=py37_0
+  - certifi=2020.6.20=py37_0
   - clustalw=2.1=h6bb024c_4
   - curl=7.65.3=hf8cf82a_0
   - entrez-direct=11.0=pl526_0
@@ -35,6 +38,7 @@ dependencies:
   - hmmer=3.2.1=hf484d3e_1
   - icu=64.2=he1b5a44_1
   - infernal=1.1.2=h14c3975_2
+  - intel-openmp=2020.2=254
   - jpeg=9c=h14c3975_1001
   - krb5=1.16.3=h05b26f9_1001
   - libcurl=7.65.3=hda55be3_0
@@ -58,9 +62,15 @@ dependencies:
   - libxslt=1.1.33=h31b3aaa_0
   - lz4-c=1.8.3=he1b5a44_1001
   - minced=0.4.2=0
+  - mkl=2020.2=256
+  - mkl-service=2.3.0=py37he8ac12f_0
+  - mkl_fft=1.2.0=py37h23d657b_0
+  - mkl_random=1.1.1=py37h0573a6f_0
   - ncurses=6.1=hf484d3e_1002
+  - numpy=1.19.2=py37h54aff64_0
+  - numpy-base=1.19.2=py37hfa32c7d_0
   - openjdk=11.0.1=h516909a_1016
-  - openssl=1.1.1c=h516909a_0
+  - openssl=1.1.1h=h7b6447c_0
   - paml=4.9=h14c3975_4
   - pango=1.42.4=ha030887_1
   - parallel=20190922=1
@@ -284,6 +294,7 @@ dependencies:
   - python=3.7.3=h33d41f4_1
   - readline=8.0=hf8c457e_0
   - setuptools=41.4.0=py37_0
+  - six=1.15.0=py_0
   - sqlite=3.30.1=hcee41ef_0
   - subread=1.6.4=h84994c4_1
   - t_coffee=11.0.8=py37hea885bf_8

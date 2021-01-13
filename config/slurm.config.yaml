@@ -4,6 +4,7 @@ __default__:
   partition: ""
   runtime: "-t"
   threads: "-n"
+  stdout: "galorious.{rule}.{wildcards}.stdout"
 
 guppy_basecalling:
   partition: '-G 1'

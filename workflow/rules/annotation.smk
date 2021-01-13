@@ -16,7 +16,7 @@ rule ctrl_anno:
 
 rule prokkaC:
     input:
-        "assembly/assembly.fasta"
+        ancient("assembly/assembly.fasta")
     output:
         "annotation/annotation.filt.gff",
         "annotation/prokka.gff",

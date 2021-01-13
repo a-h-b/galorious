@@ -41,7 +41,7 @@ rule mapping_on_assembly:
 
 rule bwa_index:
     input:
-        "assembly/assembly.fasta"
+        ancient("assembly/assembly.fasta")
     output:
         "assembly/assembly.fasta.amb",
         "assembly/assembly.fasta.bwt",
@@ -77,17 +77,51 @@ rule index_bam:
         samtools index {input} > {log} 2>&1
         """
 
+rule contig_length:
+    input:
+        ancient("assembly/assembly.fasta")
+    output:
+        "assembly/assembly.length.txt",
+        "assembly/assembly.gc_content.txt",
+        "assembly/assembly.gc_skew.txt"
+    resources:
+        runtime = "1:00:00",
+        mem = config['normalMem']
+    threads: 1
+    conda: ENVDIR + "galorious_annotation.yaml"
+    log: "logs/contig_length.log"
+    message: "contig_length: Getting data on assembly length and GC content."
+    shell:
+        """
+        export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
+        perl {SCRIPTSDIR}fastaNamesSizes.pl {input} > {output[0]} 2>> {log}
+
+        echo "Obtaining GC content"
+        TMP_GC=$(mktemp --tmpdir={TMPDIR} -t "gc_out_XXXXXX.txt")
+        perl {SCRIPTSDIR}get_GC_content.pl {input} $TMP_GC >> {log} 2>&1
+
+        # The program above provides a file gc_out.txt. This command cleans the output
+        echo "Clean up output" >> {log}
+        cut -f1,2 $TMP_GC | sed -e 's/>//g'> {output[1]}
+        echo "Remove intermediate files" >> {log}
+        rm $TMP_GC
+
+        echo "GCskew"
+        python {SCRIPTSDIR}gcskew.py -i {input} -o {output[2]} -k 2000 >>{log} 2>&1 
+        """
+
 
 rule call_contig_depth:
     input:
         "assembly/reads.on.assembly.sorted.bam",
         "assembly/assembly.fasta",
         "assembly/assembly.fasta.fai",
-        "assembly/assembly.fasta.bed3"
+        "assembly/assembly.fasta.bed3",
+        "assembly/assembly.length.txt"
     output:
         "assembly/assembly.contig_coverage.txt",
         "assembly/assembly.contig_depth.txt",
-        report("stats/assembly.contig_flagstat.txt",category="Assembly")
+        "assembly/assembly.contig_depth_perBase.txt"
     resources:
         runtime = "2:00:00",
         mem = config['normalMem']
@@ -101,21 +135,20 @@ rule call_contig_depth:
         echo "Coverage calculation done" >> {log}
         echo "Running BEDTools for average depth in each position" >> {log}
         TMP_DEPTH=$(mktemp --tmpdir={TMPDIR} -t "depth_file_XXXXXX.txt")
-        genomeCoverageBed -ibam {input[0]} | grep -v "genome" > $TMP_DEPTH
+        genomeCoverageBed -ibam {input[0]} 2>> {log} | grep -v "genome" > $TMP_DEPTH 2>> {log}
+        genomeCoverageBed -ibam {input[0]} -d -g {input[4]} >{output[2]} 2>> {log}  
         echo "Depth calculation done" >> {log}
 
         ## This method of depth calculation was adapted and modified from the CONCOCT code
-	perl {SCRIPTSDIR}/calcAvgCoverage.pl $TMP_DEPTH {input[1]} >{output[1]}	
+	perl {SCRIPTSDIR}calcAvgCoverage.pl $TMP_DEPTH {input[1]} >{output[1]}	
 
         echo "Remove the temporary file" >> {log}
         rm $TMP_DEPTH
-        echo "flagstat" >> {log}
-        samtools flagstat {input[0]} 2>> {log} | cut -f1 -d ' ' > {output[2]}
         """
 
 rule contig_fasta_indexing:
     input:
-        "assembly/assembly.fasta"
+        ancient("assembly/assembly.fasta")
     output:
         "assembly/assembly.fasta.fai"
     resources:

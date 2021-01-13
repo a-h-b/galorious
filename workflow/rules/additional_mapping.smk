@@ -9,38 +9,40 @@ try:
 except:
     print("Table for additional Illumina samples was not found. Please enter the absolute path and file name in the config file or remove additional_mapping from steps list.")
     raise
+if 'sample' not in samples.columns:
+    raise Exception("You have not provided sample names - column should be named sample.")
 if 'r1_file' not in samples.columns:
-    raise Exception("You haven't provided file names for read 1 - column should be named r1_file.")
+    raise Exception("You have not provided file names for read 1 - column should be named r1_file.")
 if 'r2_file' not in samples.columns:
-    raise Exception("You haven't provided file names for read 2 - column should be named r2_file.")
+    raise Exception("You have not provided file names for read 2 - column should be named r2_file.")
 if 'se_file' not in samples.columns:
-    raise Exception("You haven't provided file names for single end reads - column should be named se_file.")
+    raise Exception("You have not provided file names for single end reads - column should be named se_file.")
 if 'path' not in samples.columns:
-    raise Exception("You haven't provided a path to look for the additional samples - column should be named path.")
+    raise Exception("You have not provided a path to look for the additional samples - column should be named path.")
 samples = samples.set_index("sample",drop=False)
-samples.index = samples.index.set_levels([i.astype(str) for i in samples.index.levels])
-
+#samples.index = samples.index.set_levels([i.astype(str) for i in samples.index.levels])
+#print(samples)
 
 def getAdditionalMapping_input(wildcards):
-    return samples.loc[wildcards.sample, "path"] + "/" + samples.loc[wildcards.sample,["r1_file", "r2_file","se_file"].dropna()
+    return [samples.loc[wildcards.sample, "path"] + "/" + s for s in samples.loc[wildcards.sample,["r1_file", "r2_file","se_file"]]]
 
 
 rule add_mapping_on_assembly:
     input:
         getAdditionalMapping_input,
-        "assembly/assembly.fasta.amb",
-        "assembly/assembly.fasta.bwt",
-        "assembly/assembly.fasta.pac",
-        "assembly/assembly.fasta.sa",
-        "assembly/assembly.fasta.ann",
-        "assembly/assembly.fasta"
+        ancient("assembly/assembly.fasta.amb"),
+        ancient("assembly/assembly.fasta.bwt"),
+        ancient("assembly/assembly.fasta.pac"),
+        ancient("assembly/assembly.fasta.sa"),
+        ancient("assembly/assembly.fasta.ann"),
+        ancient("assembly/assembly.fasta")
     output:
         'additional_mapping/{sample}.reads.on.assembly.sorted.bam'
     resources:
         runtime = "12:00:00",
         mem = config['bigMem']
     params:
-        prefix="additional_mapping/{wildcards.sample}.reads.on.assembly"
+        prefix= lambda wildcards: "additional_mapping/" + wildcards.sample + ".reads.on.assembly"
     threads: 2
     conda: ENVDIR + "galorious_mapping.yaml"
     log: "logs/additional_mapping_on_assembly.{sample}.log"
@@ -65,20 +67,21 @@ rule add_mapping_on_assembly:
 rule call_contig_add_depth:
     input:
         "additional_mapping/{sample}.reads.on.assembly.sorted.bam",
-        "assembly/assembly.fasta",
-        "assembly/assembly.fasta.fai",
-        "assembly/assembly.fasta.bed3"
+        ancient("assembly/assembly.fasta"),
+        ancient("assembly/assembly.fasta.fai"),
+        ancient("assembly/assembly.fasta.bed3"),
+        "assembly/assembly.length.txt"
     output:
         "additional_mapping/{sample}.contig_coverage.txt",
         "additional_mapping/{sample}.contig_depth.txt",
-        report("additional_mapping/{sample}.contig_flagstat.txt",category="Assembly")
+        "additional_mapping/{sample}.contig_depth_perBase.txt"
     resources:
         runtime = "2:00:00",
         mem = config['normalMem']
     threads: 1
     conda: ENVDIR + "galorious_mapping.yaml"
-    log: "logs/analysis_call_contig_depth.log"
-    message: "call_contig_depth: Getting data on assembly coverage with Illumina reads."
+    log: "logs/call_contig_add_depth.{sample}.log"
+    message: "call_contig_add_depth: Getting data on assembly coverage with Illumina reads for {wildcards.sample}."
     shell:
         """
         coverageBed -b {input[0]} -a {input[3]} -sorted > {output[0]} 2>> {log}
@@ -86,21 +89,21 @@ rule call_contig_add_depth:
         echo "Running BEDTools for average depth in each position" >> {log}
         TMP_DEPTH=$(mktemp --tmpdir={TMPDIR} -t "depth_file_XXXXXX.txt")
         genomeCoverageBed -ibam {input[0]} | grep -v "genome" > $TMP_DEPTH
+        genomeCoverageBed -ibam {input[0]} -d -g {input[4]} > {output[2]}
         echo "Depth calculation done" >> {log}
 
         ## This method of depth calculation was adapted and modified from the CONCOCT code
-	perl {SCRIPTSDIR}/calcAvgCoverage.pl $TMP_DEPTH {input[1]} >{output[1]}	
+        perl {SCRIPTSDIR}calcAvgCoverage.pl $TMP_DEPTH {input[1]} >{output[1]}	
 
         echo "Remove the temporary file" >> {log}
         rm $TMP_DEPTH
-        echo "flagstat" >> {log}
-        samtools flagstat {input[0]} 2>> {log} | cut -f1 -d ' ' > {output[2]}
         """
 
 
 localrules: ctrl_addMap
-rule ctrl_addMap
+rule ctrl_addMap:
     input:
-        expand("additional_mapping/{sam}.contig_depth.txt",sam=samples.sample)
+        expand("additional_mapping/{samples.sample}.contig_depth.txt",samples=samples.itertuples())
     output:
         touch("status/additional_mapping.done")
+
