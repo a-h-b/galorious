@@ -20,6 +20,7 @@ rule prep_circos:
     resources:
         runtime="12:00:00",
         mem=config['normalMem']
+    log: "logs/prep_circos.log"
     script:
         SCRIPTSDIR + "prep_circos.R"
 
@@ -33,9 +34,10 @@ rule circos:
     resources:
         runtime="1:00:00",
         mem=config['normalMem']
+    log: "logs/circos.log"
     shell:
         """
         export PERL5LIB=$CONDA_PREFIX/lib/site_perl/5.26.2
-        circos -conf {SCRIPTSDIR}circos.conf
+        circos -conf {SCRIPTSDIR}circos.conf &>> {log}
         """
 

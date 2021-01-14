@@ -1,3 +1,8 @@
+log <- file(snakemake@log[[1]], open="wt")
+sink(log)
+sink(log, type="message")
+
+
 contigs <- read.delim("assembly/assembly.length.txt",header=F,stringsAsFactors=F)
 colnames(contigs) <- c("contig","length")
 genes <- read.delim("annotation/annotation_CDS_RNA_hmms.gff",header=F,stringsAsFactors=F)
